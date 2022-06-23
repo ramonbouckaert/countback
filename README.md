@@ -1,4 +1,4 @@
-# ACT Election Countback Estimator
+# ACT Election Countback Simulator
 
 This tool simulates the Hare Clark preference distribution and countback procedure used in the Australian Capital Territory for filling casual vacancies.
 
