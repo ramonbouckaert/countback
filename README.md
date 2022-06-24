@@ -12,6 +12,4 @@ I've also included a simple web client bootstrapped using create-react-app that 
 To build the server, first retrieve ballot paper preference data from the [Elections ACT website](https://www.elections.act.gov.au/elections_and_voting/past_act_legislative_assembly_elections).
 Put the relevant txt files in `src/main/resources/electiondata/`.
 
-Optionally, [produce a build of the web client](https://github.com/ramonbouckaert/countback/blob/main/src/main/client/README.md) and place the built files in `src/main/resources/webroot`.
-
 Then run `mvn clean package` in the root directory.
