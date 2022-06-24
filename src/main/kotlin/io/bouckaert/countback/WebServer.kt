@@ -101,30 +101,28 @@ class WebServer(private val serverConfig: ServerConfig.Config) {
                         message = "You must specify the candidate who will resign"
                     )
                     else -> {
-                        val election = try {
-                            loadElectionData(year, electorate).let {
-                                Election(
-                                    if (electorate == "Molonglo") 7 else 5,
-                                    it.first,
-                                    it.second,
-                                    year <= 2012
-                                )
+                        call.respondOutputStream(
+                            contentType = ContentType.Text.Plain,
+                            status = HttpStatusCode.OK
+                        ) {
+                            this.writeln("Loading data...")
+                            this.writeln("")
+
+                            val election = try {
+                                loadElectionData(year, electorate).let {
+                                    Election(
+                                        if (electorate == "Molonglo") 7 else 5,
+                                        it.first,
+                                        it.second,
+                                        year <= 2012
+                                    )
+                                }
+                            } catch (e: Throwable) {
+                                this.writeln("Failed to load election data!")
+                                null
                             }
-                        } catch (e: Throwable) {
-                            null
-                        }
-                        if (election == null) {
-                            call.respond(
-                                status = HttpStatusCode.BadRequest,
-                                message = "Electorate '$electorate' not supported or could not be loaded"
-                            )
-                        } else {
 
-                            call.respondOutputStream(
-                                contentType = ContentType.Text.Plain,
-                                status = HttpStatusCode.OK
-                            ) {
-
+                            if (election != null) {
                                 this.writeln("*** Simulating initial distribution of preferences ***")
                                 this.writeln("")
                                 val initialDistribution = election.performCount(
@@ -137,7 +135,8 @@ class WebServer(private val serverConfig: ServerConfig.Config) {
                                 winningCandidates.forEach { this.writeln(it.name) }
                                 val resigningCandidatePile =
                                     initialDistribution.winnersAndVotes[Candidate(candidateToResign)]
-                                val filteredCandidatesToContest = candidatesToContest.filter { c -> c !in winningCandidates }.toSet()
+                                val filteredCandidatesToContest =
+                                    candidatesToContest.filter { c -> c !in winningCandidates }.toSet()
                                 when {
                                     filteredCandidatesToContest.isEmpty() ->
                                         this.writeln("There are no candidates eligible to contest the countback.")
@@ -154,7 +153,6 @@ class WebServer(private val serverConfig: ServerConfig.Config) {
                                     }
                                 }
                             }
-
                         }
                     }
                 }
@@ -165,17 +163,15 @@ class WebServer(private val serverConfig: ServerConfig.Config) {
     private fun loadElectionData(year: Int, electorate: String): Pair<Set<Candidate>, List<Ballot>> {
         val classLoader = Thread.currentThread().contextClassLoader
 
-        val dataLoader = ACTDataLoader(
-            electoratesStream = classLoader.getResourceAsStream("electiondata/$year/Electorates.txt"),
-            candidatesStream = classLoader.getResourceAsStream("electiondata/$year/Candidates.txt"),
-            votesStream = classLoader.getResourceAsStream("electiondata/$year/${electorate}Total.txt")
-        )
+        val dataLoader = ACTDataLoader {
+            classLoader.getResourceAsStream("electiondata/$year.zip")
+        }
 
         val candidatesMap = dataLoader.loadCandidates(
             dataLoader.loadElectorates()
         )[electorate]!!
 
-        val ballots = dataLoader.loadBallots(candidatesMap)
+        val ballots = dataLoader.loadBallots(electorate, candidatesMap)
 
         return candidatesMap.values.toSet() to ballots
     }
@@ -183,10 +179,9 @@ class WebServer(private val serverConfig: ServerConfig.Config) {
     private fun loadCandidates(year: Int): Map<String, Collection<Candidate>> {
         val classLoader = Thread.currentThread().contextClassLoader
 
-        val dataLoader = ACTDataLoader(
-            electoratesStream = classLoader.getResourceAsStream("electiondata/$year/Electorates.txt"),
-            candidatesStream = classLoader.getResourceAsStream("electiondata/$year/Candidates.txt")
-        )
+        val dataLoader = ACTDataLoader {
+            classLoader.getResourceAsStream("electiondata/$year.zip")
+        }
 
         return dataLoader.loadCandidates(
             dataLoader.loadElectorates()

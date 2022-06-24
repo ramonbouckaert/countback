@@ -23,8 +23,11 @@ that provides a UI for performing these counts.
 **You can find a hosted version of the tool [here](http://countback.bouckaert.io/).**
 
 ## Building
-To build the server, first retrieve ballot paper preference data from the relevant page on the
-[Elections ACT website](https://www.elections.act.gov.au/elections_and_voting/past_act_legislative_assembly_elections)
-for 2020, 2016, 2012 and 2008. Put the relevant txt files in `src/main/resources/electiondata/{year}/`.
 
-Then run `mvn clean package` in the root directory.
+To build, run `mvn clean package` in the root directory. The build targets Java 17.
+
+## Running
+
+With a JRE for Java 17 or higher installed, run:
+
+`java -jar [path_to_jar]`

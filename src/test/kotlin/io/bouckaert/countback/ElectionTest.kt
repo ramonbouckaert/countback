@@ -9,17 +9,17 @@ class ElectionTest {
 
     companion object {
         fun testRealElectorate(year: Int, electorate: String, verbose: Boolean = false): Election.Results {
-            val dataLoader = ACTDataLoader(
-                File("src/main/resources/electiondata/$year/Electorates.txt"),
-                File("src/main/resources/electiondata/$year/Candidates.txt"),
-                File("src/main/resources/electiondata/$year/${electorate}Total.txt")
-            )
+            val classLoader = Thread.currentThread().contextClassLoader
+
+            val dataLoader = ACTDataLoader {
+                classLoader.getResourceAsStream("electiondata/$year.zip")!!
+            }
 
             val candidatesMap = dataLoader.loadCandidates(
                 dataLoader.loadElectorates()
             )[electorate]!!
 
-            val votes = dataLoader.loadBallots(candidatesMap)
+            val votes = dataLoader.loadBallots(electorate, candidatesMap)
 
             val election = Election(
                 numberOfVacancies = if (electorate == "Molonglo") 7 else 5,
