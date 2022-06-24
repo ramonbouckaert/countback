@@ -2,17 +2,16 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Button, Card, Layout, Select } from "antd";
 import 'antd/dist/antd.css';
 import Sider from "antd/es/layout/Sider";
-import { CandidatesMap } from "./types";
 import { Content } from "antd/es/layout/layout";
 
 const { Option } = Select;
 
 const API_URL = ""
 
-const App: FunctionComponent = () => {
+const CountbackApp: FunctionComponent = () => {
 
   const [menuCollapsed, setMenuCollapsed] = useState(false);
-  const [candidatesMap, setCandidatesMap] = useState(null as CandidatesMap | null);
+  const [candidatesMap, setCandidatesMap] = useState(null as Record<string, string[]> | null);
   const [fetchingCandidatesMap, setFetchingCandidatesMap] = useState(0);
   const [year, setYear] = useState(null as number | null);
   const [electorate, setElectorate] = useState(null as string | null);
@@ -111,7 +110,7 @@ const App: FunctionComponent = () => {
                   loading={fetchingCandidatesMap > 0}
                 >
                   {candidatesMap && electorate && candidatesMap[electorate]
-                    ? candidatesMap[electorate].map(c => <Option key={c.name}>{c.name}</Option>)
+                    ? candidatesMap[electorate].map(c => <Option key={c}>{c}</Option>)
                     : []}
                 </Select>
               </Card>
@@ -127,7 +126,7 @@ const App: FunctionComponent = () => {
                     if (candidatesMap && electorate && candidatesMap[electorate]) {
                       if (s === "*all*") {
                         setCandidatesToContest(
-                          candidatesMap[electorate].filter(c => c.name !== candidateToRetire).map(c => c.name)
+                          candidatesMap[electorate].filter(c => c !== candidateToRetire)
                         )
                       } else if (s === "*none*") {
                         setCandidatesToContest([])
@@ -140,8 +139,8 @@ const App: FunctionComponent = () => {
                   <Option key={"*all*"}>-- Select All --</Option>
                   <Option key={"*none*"}>-- Deselect All --</Option>
                   {candidatesMap && electorate && candidatesMap[electorate]
-                    ? candidatesMap[electorate].filter(c => c.name !== candidateToRetire).map(c => <Option
-                      key={c.name}>{c.name}</Option>)
+                    ? candidatesMap[electorate].filter(c => c !== candidateToRetire).map(c => <Option
+                      key={c}>{c}</Option>)
                     : []}
                 </Select>
               </Card>
@@ -174,4 +173,4 @@ const App: FunctionComponent = () => {
   );
 }
 
-export default App;
+export default CountbackApp;
