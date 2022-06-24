@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Button, Card, Col, Layout, Row, Select, Spin } from "antd";
+import { Button, Card, Layout, Select } from "antd";
 import 'antd/dist/antd.css';
 import Sider from "antd/es/layout/Sider";
 import { CandidatesMap } from "./types";
@@ -125,11 +125,11 @@ const App: FunctionComponent = () => {
                   }}
                   onSelect={(s: string) => {
                     if (candidatesMap && electorate && candidatesMap[electorate]) {
-                      if (s == "*all*") {
+                      if (s === "*all*") {
                         setCandidatesToContest(
                           candidatesMap[electorate].filter(c => c.name !== candidateToRetire).map(c => c.name)
                         )
-                      } else if (s == "*none*") {
+                      } else if (s === "*none*") {
                         setCandidatesToContest([])
                       }
                     }
@@ -167,7 +167,7 @@ const App: FunctionComponent = () => {
           }
         </Sider>
         <Content>
-          <iframe src={iframeSrc} style={{ width: "100%", height: "100%", display: "block" }} frameBorder={0}/>
+          <iframe title={"countback-output"} src={iframeSrc} style={{ width: "100%", height: "100%", display: "block" }} frameBorder={0}/>
         </Content>
       </Layout>
     </>
