@@ -1,6 +1,5 @@
-import io.bouckaert.countback.Candidate
-import io.bouckaert.countback.Countback
-import io.bouckaert.countback.VotePile
+package io.bouckaert.countback
+
 import org.junit.Test
 import kotlin.test.assertEquals
 

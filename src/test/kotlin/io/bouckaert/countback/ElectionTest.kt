@@ -1,4 +1,5 @@
-import io.bouckaert.countback.*
+package io.bouckaert.countback
+
 import org.junit.Test
 import java.io.File
 import java.io.OutputStream
