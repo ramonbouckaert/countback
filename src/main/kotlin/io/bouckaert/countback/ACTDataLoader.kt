@@ -42,25 +42,13 @@ class ACTDataLoader(
 
     suspend fun loadBallots(electorate: String, candidateMapping: Map<Pair<Int, Int>, Candidate>) =
         readFromPath("${basePath}${electorate}Total.txt")
-            .let {
-                println("starting groupBy")
-                it
-            }
             .groupBy({ "${it["batch"]}${it["pindex"]}" }) { entry ->
                 val pcode = entry["pcode"]?.toInt() ?: throw Error("Can't convert ${entry["pcode"]} to Int")
                 val ccode = entry["ccode"]?.toInt() ?: throw Error("Can't convert ${entry["ccode"]} to Int")
                 entry["pref"]?.toInt() to candidateMapping[pcode to ccode]
             }
-            .let {
-                println("starting mapValues")
-                it
-            }
             .mapValues { entry ->
                 linkedSetOf(*entry.value.sortedBy { it.first }.mapNotNull { it.second }.toTypedArray())
-            }
-            .let {
-                println("starting mapNotNull")
-                it
             }
             .mapNotNull { Ballot(it.value) }
 

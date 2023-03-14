@@ -20,13 +20,9 @@ class ElectionTest {
                 }
             )
 
-            println("loading candidates")
-
             val candidatesMap = dataLoader.loadCandidates(
                     dataLoader.loadElectorates()
                 )[electorate]!!
-
-            println("loading ballots")
 
             val votes = dataLoader.loadBallots(electorate, candidatesMap)
 
