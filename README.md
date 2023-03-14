@@ -32,4 +32,5 @@ project root.
 To serve on your local machine, you can run:
 
 `npm install -g serve`
+
 `serve -s dist`
