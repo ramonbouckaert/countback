@@ -1,7 +1,5 @@
 package io.bouckaert.countback
 
-import java.io.OutputStream
-
 class Countback(
     val resigningCandidatePile: VotePile,
     val originalQuota: Double,
@@ -12,7 +10,7 @@ class Countback(
 
     fun performCount(
         verbose: Boolean = false,
-        outputStream: OutputStream = OutputStream.nullOutputStream()
+        writeOutput: (String, newParagraph: Boolean) -> Unit = { _, _ -> }
     ): Pair<Candidate, VotePile> {
 
         val adjustedResults = resigningCandidatePile.adjustFinalCountForCountback(originalQuota)
@@ -35,30 +33,30 @@ class Countback(
 
         // Iterate until all positions are filled
         while (true) {
-            if (verbose) outputStream.writeln("")
-            if (verbose) outputStream.writeln("Starting count #${countNumber}: ${count}")
+            if (verbose) writeOutput("Starting count #${countNumber}: ${count}", true)
 
             // Elect any candidate with more first preference votes than the quota
             count.sortedByDescending().forEach { (candidate) ->
                 val votePile = count[candidate]
                 if (votePile != null && votePile.count() >= quota(count.intoOnePile().count())) {
-                    if (verbose) outputStream.writeln(
+                    if (verbose) writeOutput(
                         "Electing candidate $candidate as their count (${votePile.count()}) meets or exceeds the quota (${
                             quota(
                                 count.intoOnePile().count()
                             )
-                        })"
+                        })",
+                        false
                     )
-                    outputStream.writeln("Elected candidate $candidate ($votePile)")
+                    writeOutput("Elected candidate $candidate ($votePile)", true)
                     return candidate to votePile
                 }
             }
 
             // If there is only one remaining candidate, elect them
             if (count.filterNotNull().size <= 1) {
-                if (verbose) outputStream.writeln("There is only one candidate left, so they will be elected")
+                if (verbose) writeOutput("There is only one candidate left, so they will be elected", false)
                 return count.entries.first().let {
-                    outputStream.writeln("Elected candidate ${it.key} (${it.value})")
+                    writeOutput("Elected candidate ${it.key} (${it.value})", true)
                     it.key to it.value
                 }
             }
@@ -76,14 +74,14 @@ class Countback(
                 }
             }?.key
             if (excludedCandidate != null) {
-                if (verbose) outputStream.writeln("Nobody can be elected this count, so the candidate with the fewest votes is eliminated: $excludedCandidate.")
+                if (verbose) writeOutput("Nobody can be elected this count, so the candidate with the fewest votes is eliminated: $excludedCandidate.", false)
 
                 count = count.removeCandidateAndDistributeRemainingVotes(
                     excludedCandidate,
                     quota(count.intoOnePile().count()),
                     countNumber,
                     verbose,
-                    outputStream
+                    writeOutput
                 )
             }
 

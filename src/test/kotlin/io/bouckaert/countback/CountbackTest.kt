@@ -1,12 +1,15 @@
 package io.bouckaert.countback
 
-import org.junit.Test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@ExperimentalCoroutinesApi
 class CountbackTest {
 
     @Test
-    fun murrumbidgee2022Test() {
+    fun murrumbidgee2022Test() = runTest {
         val electionResults = ElectionTest.testRealElectorate(2020, "Murrumbidgee")
 
         val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate("JONES, Giulia")]!!
@@ -25,7 +28,7 @@ class CountbackTest {
     }
 
     @Test
-    fun yerrabi2021Test() {
+    fun yerrabi2021Test() = runTest {
         val electionResults = ElectionTest.testRealElectorate(2020, "Yerrabi")
 
         val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate("COE, Alistair")]!!
@@ -44,7 +47,7 @@ class CountbackTest {
     }
 
     @Test
-    fun kurrajong2017Test() {
+    fun kurrajong2017Test() = runTest {
         val electionResults = ElectionTest.testRealElectorate(2016, "Kurrajong")
 
         val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate("DOSZPOT, Steve")]!!
@@ -63,7 +66,7 @@ class CountbackTest {
     }
 
     @Test
-    fun yerrabi2019Test() {
+    fun yerrabi2019Test() = runTest {
         val electionResults = ElectionTest.testRealElectorate(2016, "Yerrabi")
 
         val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate("FITZHARRIS, Meegan")]!!
@@ -85,7 +88,7 @@ class CountbackTest {
 
 
     @Test
-    fun brindabella2013Test() {
+    fun brindabella2013Test() = runTest {
         val electionResults = ElectionTest.testRealElectorate(2012, "Brindabella")
 
         val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate("SESELJA, Zed")]!!
@@ -103,7 +106,7 @@ class CountbackTest {
     }
 
     @Test
-    fun molonglo2014Test() {
+    fun molonglo2014Test() = runTest {
         val electionResults = ElectionTest.testRealElectorate(2012, "Molonglo")
 
         val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate("GALLAGHER, Katy")]!!
@@ -123,7 +126,7 @@ class CountbackTest {
     }
 
     @Test
-    fun ginninderra2016Test() {
+    fun ginninderra2016Test() = runTest {
         val electionResults = ElectionTest.testRealElectorate(2012, "Ginninderra")
 
         val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate("PORTER, Mary")]!!
@@ -143,7 +146,7 @@ class CountbackTest {
     }
 
     @Test
-    fun brindabella2016Test() {
+    fun brindabella2016Test() = runTest {
         val electionResults = ElectionTest.testRealElectorate(2012, "Brindabella")
 
         val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate("SMYTH, Brendan")]!!
@@ -163,7 +166,7 @@ class CountbackTest {
     }
 
     @Test
-    fun ginninderra2011Test() {
+    fun ginninderra2011Test() = runTest {
         val electionResults = ElectionTest.testRealElectorate(2008, "Ginninderra")
 
         val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate("STANHOPE, Jon")]!!

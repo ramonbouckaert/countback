@@ -1,4 +1,4 @@
-# Countback React App
+# io.bouckaert.countback.Countback React App
 
 A simple SPA for allowing users to run countbacks using this server. This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
