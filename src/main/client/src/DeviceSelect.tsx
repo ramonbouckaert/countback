@@ -9,29 +9,30 @@ export const DeviceSelect: FunctionComponent<SelectProps> =
       return (
         <>
           {props.mode === "multiple"
-          ? (<div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>{props.placeholder}</div>)
-          : null}
+            ? (<div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>{props.placeholder}</div>)
+            : null}
           <select
             placeholder={props.placeholder?.toString() ?? undefined}
             multiple={props.mode === "multiple"}
             style={props.style}
             value={props.value}
             onChange={event => {
-              if (props.onChange) {
-                if (props.mode === "multiple") {
-                  let result: string[] = [];
-                  const options = event.target.options;
-                  let i = 0, iLen = options.length;
-                  for (; i < iLen; i++) {
-                    let opt = options[i];
-                    if (opt.selected) result.push(opt.value || opt.text)
-                  }
-                  props.onChange(result, result.map(r => ({
-                    label: r
-                  })));
-                } else {
-                  props.onChange(event.target.value, { label: event.target.value });
+              if (props.mode === "multiple") {
+                let result: string[] = [];
+                const options = event.target.options;
+                let i = 0, iLen = options.length;
+                for (; i < iLen; i++) {
+                  let opt = options[i];
+                  if (opt.selected) result.push(opt.value || opt.text)
                 }
+                props.onChange && props.onChange(result, result.map(r => ({
+                  label: r
+                })));
+                props.onSelect && props.onSelect(result[0], {
+                  label: result[0]
+                })
+              } else {
+                props.onChange && props.onChange(event.target.value, { label: event.target.value });
               }
             }}
           >
@@ -46,12 +47,9 @@ export const DeviceSelect: FunctionComponent<SelectProps> =
                   <option
                     label={opt.label?.toString()}
                     value={opt.value?.toString()}
-                    onClick={() => {
-                      if (props.onSelect && opt.value) {
-                        props.onSelect(opt.value, { label: opt.label })
-                      }
-                    }}
-                  />
+                  >
+                    {opt.label?.toString()}
+                  </option>
                 ))
               ]
             }
