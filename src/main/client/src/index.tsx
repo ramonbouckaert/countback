@@ -5,6 +5,14 @@ import { WebWorkerRequest, WebWorkerResponse } from "./types";
 
 let webWorker: Worker | null = null;
 
+const uuid = () => {
+  try {
+    return crypto.randomUUID();
+  } catch (e) {
+    return Math.random().toString().slice(2,11)
+  }
+}
+
 const getWebWorker = (): Promise<Worker> => {
   if (webWorker) {
     return Promise.resolve(webWorker);
@@ -34,7 +42,7 @@ export const sendWwMessage = async (request: WebWorkerRequest): Promise<WebWorke
   let id = "UNSET";
   try {
     const ww = await getWebWorker();
-    id = crypto.randomUUID();
+    id = uuid();
     const promise: Promise<WebWorkerResponse> = new Promise((resolve, reject) => {
       const handleEvent = (event: Event) => {
         try {
@@ -65,7 +73,7 @@ export const sendSwMessageMultipart = async (
   let id = "UNSET";
   try {
     const ww = await getWebWorker();
-    id = crypto.randomUUID();
+    id = uuid();
     const handleEvent = (event: Event) => {
       try {
         if (event instanceof MessageEvent) {
