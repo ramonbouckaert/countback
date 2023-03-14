@@ -51,7 +51,9 @@ export const DeviceSelect: FunctionComponent<SelectProps> =
                         props.onSelect(opt.value, { label: opt.label })
                       }
                     }}
-                  />
+                  >
+                    {opt.label?.toString()}
+                  </option>
                 ))
               ]
             }
