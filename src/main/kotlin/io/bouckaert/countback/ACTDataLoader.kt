@@ -1,20 +1,31 @@
 package io.bouckaert.countback
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import java.io.InputStream
-import java.util.zip.ZipInputStream
+import io.ktor.client.*
+import io.ktor.client.engine.js.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 
 class ACTDataLoader(
-    val getStream: () -> InputStream?,
+    private val basePath: String,
+    private val fileLoader: FileLoader = object : FileLoader {
+        private val client = HttpClient(Js)
+        override suspend fun loadFile(path: String): String =
+            client.get(path).bodyAsText()
+    }
 ) {
+    interface FileLoader {
+        suspend fun loadFile(path: String): String
+    }
+
     private val csvReader = csvReader()
 
-    fun loadElectorates() = readFromZip("Electorates.txt")
+    suspend fun loadElectorates() = readFromPath("${basePath}Electorates.txt")
         .associateBy({ it["ecode"]?.toInt() }) { it["electorate"] }
         .filterNotNull()
 
-    fun loadCandidates(electorateMap: Map<Int, String>) =
-        readFromZip("Candidates.txt")
+    suspend fun loadCandidates(electorateMap: Map<Int, String>) =
+        readFromPath("${basePath}Candidates.txt")
             .groupBy { it["ecode"]?.toInt() }
             .mapValues {
                 it.value.associateBy({ entry ->
@@ -29,36 +40,30 @@ class ACTDataLoader(
             }.mapKeys { it.key?.let(electorateMap::get) }
             .filterNotNull()
 
-    fun loadBallots(electorate: String, candidateMapping: Map<Pair<Int, Int>, Candidate>) =
-        readFromZip("${electorate}Total.txt")
+    suspend fun loadBallots(electorate: String, candidateMapping: Map<Pair<Int, Int>, Candidate>) =
+        readFromPath("${basePath}${electorate}Total.txt")
+            .let {
+                println("starting groupBy")
+                it
+            }
             .groupBy({ "${it["batch"]}${it["pindex"]}" }) { entry ->
                 val pcode = entry["pcode"]?.toInt() ?: throw Error("Can't convert ${entry["pcode"]} to Int")
                 val ccode = entry["ccode"]?.toInt() ?: throw Error("Can't convert ${entry["ccode"]} to Int")
                 entry["pref"]?.toInt() to candidateMapping[pcode to ccode]
             }
+            .let {
+                println("starting mapValues")
+                it
+            }
             .mapValues { entry ->
                 linkedSetOf(*entry.value.sortedBy { it.first }.mapNotNull { it.second }.toTypedArray())
             }
+            .let {
+                println("starting mapNotNull")
+                it
+            }
             .mapNotNull { Ballot(it.value) }
 
-    private fun readFromZip(filename: String): List<Map<String, String>> {
-        val stream = getStream() ?: throw Error("Could not read input stream")
-        var result: List<Map<String, String>>? = null
-
-        ZipInputStream(stream).use { zis ->
-            var zipEntry = zis.nextEntry
-
-            while (zipEntry != null) {
-                if (zipEntry.name == filename) {
-                    result = csvReader.readAllWithHeader(zis)
-                    break
-                } else {
-                    zis.closeEntry()
-                }
-                zipEntry = zis.nextEntry
-            }
-        }
-
-        return result ?: throw Error("Could not retrieve file $filename")
-    }
+    private suspend fun readFromPath(path: String): List<Map<String, String>> =
+        fileLoader.loadFile(path).let(csvReader::readAllWithHeader)
 }

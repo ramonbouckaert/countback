@@ -1,23 +1,32 @@
 package io.bouckaert.countback
 
-import org.junit.Test
-import java.io.File
-import java.io.OutputStream
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
+private external fun require(module: String): dynamic
+private val fs = require("fs")
+
+@OptIn(ExperimentalCoroutinesApi::class)
 class ElectionTest {
-
     companion object {
-        fun testRealElectorate(year: Int, electorate: String, verbose: Boolean = false): Election.Results {
-            val classLoader = Thread.currentThread().contextClassLoader
+        suspend fun testRealElectorate(year: Int, electorate: String): Election.Results {
+            val dataLoader = ACTDataLoader(
+                "../../../processedResources/js/main/electiondata/$year/",
+                object : ACTDataLoader.FileLoader {
+                    override suspend fun loadFile(path: String): String =
+                        fs.readFileSync(path, "utf8") as String
+                }
+            )
 
-            val dataLoader = ACTDataLoader {
-                classLoader.getResourceAsStream("electiondata/$year.zip")!!
-            }
+            println("loading candidates")
 
             val candidatesMap = dataLoader.loadCandidates(
-                dataLoader.loadElectorates()
-            )[electorate]!!
+                    dataLoader.loadElectorates()
+                )[electorate]!!
+
+            println("loading ballots")
 
             val votes = dataLoader.loadBallots(electorate, candidatesMap)
 
@@ -28,17 +37,12 @@ class ElectionTest {
                 roundCountToInt = year <= 2012
             )
 
-            val outputStream = if (verbose) System.out else OutputStream.nullOutputStream()
-
-            return election.performCount(
-                verbose = verbose,
-                outputStream = outputStream
-            )
+            return election.performCount()
         }
     }
 
     @Test
-    fun simpleTest() {
+    fun simpleTest() = runTest {
         val cPlatypus = Candidate("Platypus")
         val cWombat = Candidate("Wombat")
         val cEmu = Candidate("Emu")
@@ -67,7 +71,7 @@ class ElectionTest {
     // 2020 Election
 
     @Test
-    fun murrumbidgee2020Test() {
+    fun murrumbidgee2020Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("HANSON, Jeremy"),
@@ -81,7 +85,7 @@ class ElectionTest {
     }
 
     @Test
-    fun kurrajong2020Test() {
+    fun kurrajong2020Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("BARR, Andrew"),
@@ -95,7 +99,7 @@ class ElectionTest {
     }
 
     @Test
-    fun brindabella2020Test() {
+    fun brindabella2020Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("GENTLEMAN, Mick"),
@@ -109,7 +113,7 @@ class ElectionTest {
     }
 
     @Test
-    fun yerrabi2020Test() {
+    fun yerrabi2020Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("COE, Alistair"),
@@ -123,7 +127,7 @@ class ElectionTest {
     }
 
     @Test
-    fun ginninderra2020Test() {
+    fun ginninderra2020Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("BERRY, Yvette"),
@@ -139,7 +143,7 @@ class ElectionTest {
     // 2016 Election
 
     @Test
-    fun murrumbidgee2016Test() {
+    fun murrumbidgee2016Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("HANSON, Jeremy"),
@@ -153,7 +157,7 @@ class ElectionTest {
     }
 
     @Test
-    fun kurrajong2016Test() {
+    fun kurrajong2016Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("BARR, Andrew"),
@@ -167,7 +171,7 @@ class ElectionTest {
     }
 
     @Test
-    fun brindabella2016Test() {
+    fun brindabella2016Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("GENTLEMAN, Mick"),
@@ -181,7 +185,7 @@ class ElectionTest {
     }
 
     @Test
-    fun yerrabi2016Test() {
+    fun yerrabi2016Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("COE, Alistair"),
@@ -195,7 +199,7 @@ class ElectionTest {
     }
 
     @Test
-    fun ginninderra2016Test() {
+    fun ginninderra2016Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("BERRY, Yvette"),
@@ -211,7 +215,7 @@ class ElectionTest {
     // 2012 Election
 
     @Test
-    fun molonglo2012Test() {
+    fun molonglo2012Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("BARR, Andrew"),
@@ -227,7 +231,7 @@ class ElectionTest {
     }
 
     @Test
-    fun brindabella2012Test() {
+    fun brindabella2012Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("GENTLEMAN, Mick"),
@@ -242,7 +246,7 @@ class ElectionTest {
 
 
     @Test
-    fun ginninderra2012Test() {
+    fun ginninderra2012Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("BERRY, Yvette"),
@@ -258,7 +262,7 @@ class ElectionTest {
     // 2008 Election
 
     @Test
-    fun molonglo2008Test() {
+    fun molonglo2008Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("BARR, Andrew"),
@@ -274,7 +278,7 @@ class ElectionTest {
     }
 
     @Test
-    fun brindabella2008Test() {
+    fun brindabella2008Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("BRESNAN, Amanda"),
@@ -289,7 +293,7 @@ class ElectionTest {
 
 
     @Test
-    fun ginninderra2008Test() {
+    fun ginninderra2008Test() = runTest {
         assertEquals(
             setOf(
                 Candidate("STANHOPE, Jon"),

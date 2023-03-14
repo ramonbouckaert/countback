@@ -1,12 +1,11 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Button, Card, Layout, Select } from "antd";
+import { Alert, Button, Card, Layout, Select, Spin } from "antd";
 import 'antd/dist/antd.css';
 import Sider from "antd/es/layout/Sider";
 import { Content } from "antd/es/layout/layout";
-
-const { Option } = Select;
-
-const API_URL = ""
+import { fetchCandidates, fetchCountback } from "./api";
+import { Container, ResultLine } from "./styles";
+import { DeviceSelect } from "./DeviceSelect";
 
 const CountbackApp: FunctionComponent = () => {
 
@@ -17,17 +16,23 @@ const CountbackApp: FunctionComponent = () => {
   const [electorate, setElectorate] = useState(null as string | null);
   const [candidateToRetire, setCandidateToRetire] = useState(null as string | null);
   const [candidatesToContest, setCandidatesToContest] = useState([] as string[]);
-  const [iframeSrc, setiFrameSrc] = useState(undefined as string | undefined);
+  const [fetchingCountback, setFetchingCountback] = useState(false as boolean);
+  const [countbackResult, setCountbackResult] = useState(null as JSX.Element[] | null);
+  const [fetchError, setFetchError] = useState(null as string | null);
 
   useEffect(() => {
     if (year) {
       setFetchingCandidatesMap(c => c + 1);
-      fetch(`${API_URL}api/candidates/${year}`).then(response => {
-        response.json().then(json => {
-          setCandidatesMap(json);
+      fetchCandidates(year).then(
+        response => {
+          setCandidatesMap(response);
           setFetchingCandidatesMap(c => c - 1);
-        })
-      })
+        },
+        reason => {
+          setFetchError(reason.toString());
+          setFetchingCandidatesMap(c => c - 1);
+        }
+      )
     }
   }, [year]);
 
@@ -40,6 +45,7 @@ const CountbackApp: FunctionComponent = () => {
           onCollapse={collapsed => setMenuCollapsed(collapsed)}
           width={"370"}
           style={{ backgroundColor: "#7a9ab8", height: "100%", overflowX: "auto", maxWidth: "100%" }}
+          trigger={fetchingCountback ? <Spin/> : undefined}
         >
           {!menuCollapsed && (
             <>
@@ -65,8 +71,9 @@ const CountbackApp: FunctionComponent = () => {
                   <a href={"https://github.com/ramonbouckaert/countback"}>here</a>.
                 </p>
               </Card>
-              <Card title={"Select Election Year"} style={{ margin: 10 }}>
-                <Select
+              <Card style={{ margin: 10 }}>
+                <DeviceSelect
+                  placeholder={"Select Election Year"}
                   style={{ width: "100%" }}
                   value={year}
                   onChange={(e) => {
@@ -76,15 +83,17 @@ const CountbackApp: FunctionComponent = () => {
                     setCandidatesToContest([]);
                   }}
                   showSearch={true}
-                >
-                  <Option key={2020}>2020</Option>
-                  <Option key={2016}>2016</Option>
-                  <Option key={2012}>2012</Option>
-                  <Option key={2008}>2008</Option>
-                </Select>
+                  options={[
+                    { label: "2020", value: 2020 },
+                    { label: "2016", value: 2016 },
+                    { label: "2012", value: 2012 },
+                    { label: "2008", value: 2008 }
+                  ]}
+                />
               </Card>
-              <Card title={"Select Electorate"} style={{ margin: 10 }}>
-                <Select
+              <Card style={{ margin: 10 }}>
+                <DeviceSelect
+                  placeholder={"Select Electorate"}
                   style={{ width: "100%" }}
                   value={electorate}
                   onChange={(e) => {
@@ -94,12 +103,14 @@ const CountbackApp: FunctionComponent = () => {
                   }}
                   showSearch={true}
                   loading={fetchingCandidatesMap > 0}
-                >
-                  {candidatesMap && Object.keys(candidatesMap).map(e => <Option key={e}>{e}</Option>)}
-                </Select>
+                  options={
+                    candidatesMap ? Object.keys(candidatesMap).map(e => ({ label: e, value: e })) : []
+                  }
+                />
               </Card>
-              <Card title={"Select Candidate to Retire"} style={{ margin: 10 }}>
-                <Select
+              <Card style={{ margin: 10 }}>
+                <DeviceSelect
+                  placeholder={"Select Candidate to Retire"}
                   style={{ width: "100%" }}
                   value={candidateToRetire}
                   onChange={(c) => {
@@ -108,18 +119,20 @@ const CountbackApp: FunctionComponent = () => {
                   }}
                   showSearch={true}
                   loading={fetchingCandidatesMap > 0}
-                >
-                  {candidatesMap && electorate && candidatesMap[electorate]
-                    ? candidatesMap[electorate].map(c => <Option key={c}>{c}</Option>)
-                    : []}
-                </Select>
+                  options={
+                    candidatesMap && electorate && candidatesMap[electorate]
+                      ? candidatesMap[electorate].map(c => ({ label: c, value: c }))
+                      : []
+                  }
+                />
               </Card>
-              <Card title={"Select Candidates to Contest the Casual Vacancy"} style={{ margin: 10 }}>
-                <Select
+              <Card style={{ margin: 10 }}>
+                <DeviceSelect
+                  placeholder={"Select Candidates to Contest the Casual Vacancy"}
                   mode={"multiple"}
                   style={{ width: "100%" }}
                   value={candidatesToContest}
-                  onChange={(c) => {
+                  onChange={(c: string[]) => {
                     setCandidatesToContest(c.filter(n => n !== "*all*" && n !== "*none*"))
                   }}
                   onSelect={(s: string) => {
@@ -135,38 +148,75 @@ const CountbackApp: FunctionComponent = () => {
                   }}
                   showSearch={true}
                   loading={fetchingCandidatesMap > 0}
-                >
-                  <Option key={"*all*"}>-- Select All --</Option>
-                  <Option key={"*none*"}>-- Deselect All --</Option>
-                  {candidatesMap && electorate && candidatesMap[electorate]
-                    ? candidatesMap[electorate].filter(c => c !== candidateToRetire).map(c => <Option
-                      key={c}>{c}</Option>)
-                    : []}
-                </Select>
+                  options={[
+                    { label: "-- Select All --", value: "*all*" },
+                    { label: "-- Deselect All --", value: "*none*" },
+                    ...candidatesMap && electorate && candidatesMap[electorate]
+                      ? candidatesMap[electorate].filter(c => c !== candidateToRetire).map(c => ({
+                        label: c,
+                        value: c
+                      }))
+                      : []
+                  ]}
+                />
               </Card>
-              <div style={{ paddingBottom: 70 }} >
-              <Button
-                style={{ margin: "auto", display: "block" }}
-                onClick={() => {
-                  const params = new URLSearchParams({
-                    "electorate": electorate ?? "",
-                    "candidateToResign": candidateToRetire ?? "",
-                    "candidatesToContest": candidatesToContest.join(";")
-                  });
-                  setiFrameSrc(encodeURI(`${API_URL}api/countback/${year}?${params.toString()}`));
-                  setMenuCollapsed(true);
-                }}
-                loading={fetchingCandidatesMap > 0}
-              >
-                Run Countback
-              </Button>
+              <div style={{ paddingBottom: 70 }}>
+                <Button
+                  style={{ margin: "auto", display: "block" }}
+                  onClick={() => {
+                    setCountbackResult([]);
+                    setFetchingCountback(true);
+                    try {
+                      fetchCountback(
+                        year ?? 2020,
+                        electorate ?? "",
+                        candidateToRetire ?? "",
+                        candidatesToContest,
+                        result => {
+                          if (result === null) {
+                            setFetchingCountback(false);
+                          } else {
+                            setCountbackResult(
+                              initial => (initial ?? []).concat([
+                                <ResultLine
+                                  key={(initial?.length ?? 0) + 1}
+                                  newParagraph={result.newParagraph ?? false}
+                                >
+                                  {result.message}
+                                </ResultLine>
+                              ])
+                            );
+                          }
+                        }
+                      );
+                    } catch (e: any) {
+                      setFetchingCountback(false);
+                      setFetchError(e.toString());
+                    }
+                    setMenuCollapsed(true);
+                  }}
+                  loading={fetchingCandidatesMap > 0}
+                >
+                  Run Countback
+                </Button>
               </div>
             </>
           )
           }
         </Sider>
         <Content>
-          <iframe title={"countback-output"} src={iframeSrc} style={{ width: "100%", height: "100%", display: "block" }} frameBorder={0}/>
+          { fetchError && (
+            <Alert
+              type={"error"}
+              banner={true}
+              message={fetchError}
+              closable={true}
+              onClose={() => setFetchError(null)}
+            />
+          ) }
+          <Container>
+            {countbackResult}
+          </Container>
         </Content>
       </Layout>
     </>

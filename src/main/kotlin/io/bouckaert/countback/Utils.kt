@@ -1,7 +1,5 @@
 package io.bouckaert.countback
 
-import java.io.OutputStream
-
 fun <K, V> Map<out K?, V?>.filterNotNull(): Map<K, V> = this.mapNotNull {
     it.key?.let { key ->
         it.value?.let { value ->
@@ -19,7 +17,7 @@ fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
     quota: Double,
     countNumber: Int = 1,
     verbose: Boolean = false,
-    outputStream: OutputStream = OutputStream.nullOutputStream()
+    writeOutput: (String, newParagraph: Boolean) -> Unit
 ): Map<Candidate, VotePile> {
     val votesInCandidatesPile = this[candidateToRemove] ?: VotePile()
 
@@ -42,7 +40,7 @@ fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
 
         // Compute transfer value
         val transferValue = maxOf(minOf(voteValueOfSurplus / nonExhaustedBallotPapers, 1.0), 0.0)
-        if (verbose) outputStream.writeln("Transfer value calculated at ${transferValue.toFloat()}")
+        if (verbose) writeOutput("Transfer value calculated at ${transferValue.toFloat()}", true)
 
         // Pass on the redistributed vote map and the transfer value to the next part of the function
         redistributedVotes to transferValue
@@ -50,8 +48,8 @@ fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
         // If the candidate did not reach a quota before being excluded, they didn't win, so we distribute all their votes at their present transfer value
         votesInCandidatesPile.groupByHighestPreference(this.keys.minus(candidateToRemove)) to 1.0
     }.let { (redistributedVotes, transferValue) ->
-        if (verbose) outputStream.writeln("${redistributedVotes[null]?.toString(transferValue)} have been exhausted.")
-        if (verbose) outputStream.writeln("Distributing ${redistributedVotes.filterNotNull().intoOnePile().toString(transferValue)} to remaining candidates...")
+        if (verbose) writeOutput("${redistributedVotes[null]?.toString(transferValue)} have been exhausted.", false)
+        if (verbose) writeOutput("Distributing ${redistributedVotes.filterNotNull().intoOnePile().toString(transferValue)} to remaining candidates...", false)
         this.filter { (candidate, _) -> candidate != candidateToRemove }
             .mapValues { (candidate, votePile) -> redistributedVotes[candidate]?.let {
                 votePile.plus(it, countNumber, transferValue)
@@ -60,8 +58,3 @@ fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
 }
 
 fun Map<Candidate, VotePile>.sortedByDescending() = this.entries.sortedByDescending { (_, votePile) -> votePile.count() }.map { it.key to it.value }.toMap()
-
-fun OutputStream.writeln(string: String) {
-    this.write(string.toByteArray())
-    this.write("\r\n".toByteArray())
-}

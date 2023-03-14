@@ -1,8 +1,6 @@
 package io.bouckaert.countback
 
-import java.lang.Double.min
-import java.math.BigDecimal
-import java.math.MathContext
+import kotlin.math.min
 
 class VotePile(
     val votes: List<Vote> = emptyList()
