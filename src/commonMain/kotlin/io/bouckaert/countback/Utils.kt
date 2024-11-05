@@ -1,5 +1,7 @@
 package io.bouckaert.countback
 
+import io.bouckaert.countback.store.BallotStore
+
 fun <K, V> Map<out K?, V?>.filterNotNull(): Map<K, V> = this.mapNotNull {
     it.key?.let { key ->
         it.value?.let { value ->
@@ -13,6 +15,7 @@ fun <C> Map<out C, VotePile>.intoOnePile(): VotePile = this.values.fold(VotePile
 fun Collection<VotePile>.intoOnePile(): VotePile = this.fold(VotePile()) { a, v -> a.plus(v) }
 
 fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
+    ballotStore: BallotStore,
     candidateToRemove: Candidate,
     quota: Double,
     countNumber: Int = 1,
@@ -30,7 +33,7 @@ fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
         val votesReceivedBeforeQuotaMet = votesInCandidatesPile.getPileBeforeCount(countAtWhichQuotaWasMet)
 
         // Distribute full votes received when the quota was met to their next preferred candidate still in the race
-        val redistributedVotes = votesReceivedWhenQuotaMet.getFullVotesOnly().groupByHighestPreference(this.keys.minus(candidateToRemove))
+        val redistributedVotes = votesReceivedWhenQuotaMet.getFullVotesOnly().groupByHighestPreference(ballotStore, this.keys.minus(candidateToRemove))
 
         // Calculate the vote value of the surplus (numerator for transfer value)
         val voteValueOfSurplus = (votesReceivedBeforeQuotaMet.count() + votesReceivedWhenQuotaMet.getFullVotesOnly().count()) - quota
@@ -46,7 +49,7 @@ fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
         redistributedVotes to transferValue
     } else {
         // If the candidate did not reach a quota before being excluded, they didn't win, so we distribute all their votes at their present transfer value
-        votesInCandidatesPile.groupByHighestPreference(this.keys.minus(candidateToRemove)) to 1.0
+        votesInCandidatesPile.groupByHighestPreference(ballotStore, this.keys.minus(candidateToRemove)) to 1.0
     }.let { (redistributedVotes, transferValue) ->
         if (verbose) writeOutput("${redistributedVotes[null]?.toString(transferValue)} have been exhausted.", false)
         if (verbose) writeOutput("Distributing ${redistributedVotes.filterNotNull().intoOnePile().toString(transferValue)} to remaining candidates...", false)

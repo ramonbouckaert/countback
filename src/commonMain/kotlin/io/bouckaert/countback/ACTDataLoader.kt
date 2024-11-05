@@ -22,17 +22,17 @@ class ACTDataLoader(
             }.toSet()
     }
 
-    suspend fun loadBallots(electorate: String, ecode: Int): Collection<Ballot> =
+    suspend fun loadBallots(electorate: String, ecode: Int): Sequence<Ballot> =
         readFromPath("${basePath}${electorate}Total.txt")
             .groupBy({ "${it["batch"]}${it["pindex"]}" }) { entry ->
                 val pcode = entry["pcode"]?.toInt() ?: throw Error("Can't convert ${entry["pcode"]} to Int")
                 val ccode = entry["ccode"]?.toInt() ?: throw Error("Can't convert ${entry["ccode"]} to Int")
                 entry["pref"]?.toInt() to Candidate(ecode, pcode, ccode)
             }
-            .mapValues { entry ->
-                entry.value.sortedBy { it.first }.map { it.second }.toTypedArray()
+            .mapNotNull { entry ->
+                Ballot(entry.value.sortedBy { it.first }.map { it.second }.toTypedArray())
             }
-            .mapNotNull { Ballot(it.value) }
+            .asSequence()
 
     private suspend fun readFromPath(path: String): Sequence<Map<String, String>> {
         val sequence = fileLoader.loadFile(path)

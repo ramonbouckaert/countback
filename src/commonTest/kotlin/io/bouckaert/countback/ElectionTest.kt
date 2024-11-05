@@ -1,5 +1,6 @@
 package io.bouckaert.countback
 
+import io.bouckaert.countback.store.InMemoryBallotStore
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -20,17 +21,17 @@ class ElectionTest {
 
                 val candidates = dataLoader.loadCandidates()
 
-                val votes = dataLoader.loadBallots(electorate, ecode)
+                val ballotStore = createBallotStore(dataLoader.loadPreferences(electorate, ecode))
 
                 val election = Election(
                     numberOfVacancies = if (electorate == "Molonglo") 7 else 5,
                     candidates = candidates,
-                    ballots = votes,
+                    ballotStore,
                     roundCountToInt = year <= 2012
                 )
 
                 return election.performCount()
-            } catch (e: FileLoader.Companion.FileLoadException) {
+            } catch (e: FileLoader.FileLoadException) {
                 return null
             }
         }
@@ -51,15 +52,17 @@ class ElectionTest {
         val election = Election(
             numberOfVacancies = 2,
             candidates = setOf(cPlatypus, cWombat, cEmu, cKoala),
-            ballots = listOf(
-                Ballot(arrayOf(cPlatypus, cKoala, cWombat, cEmu)),
-                Ballot(arrayOf(cPlatypus, cKoala, cWombat, cEmu)),
-                Ballot(arrayOf(cWombat, cEmu, cKoala, cPlatypus)),
-                Ballot(arrayOf(cKoala, cPlatypus, cEmu, cWombat)),
-                Ballot(arrayOf(cEmu, cWombat, cPlatypus, cKoala)),
-                Ballot(arrayOf(cEmu, cPlatypus, cWombat, cKoala)),
-                Ballot(arrayOf(cPlatypus, cKoala, cEmu, cWombat)),
-                Ballot(arrayOf(cEmu, cWombat, cPlatypus, cKoala)),
+            ballotStore = InMemoryBallotStore(
+                mapOf(
+                    1L to Ballot(arrayOf(cPlatypus, cKoala, cWombat, cEmu)),
+                    2L to Ballot(arrayOf(cPlatypus, cKoala, cWombat, cEmu)),
+                    3L to Ballot(arrayOf(cWombat, cEmu, cKoala, cPlatypus)),
+                    4L to Ballot(arrayOf(cKoala, cPlatypus, cEmu, cWombat)),
+                    5L to Ballot(arrayOf(cEmu, cWombat, cPlatypus, cKoala)),
+                    6L to Ballot(arrayOf(cEmu, cPlatypus, cWombat, cKoala)),
+                    7L to Ballot(arrayOf(cPlatypus, cKoala, cEmu, cWombat)),
+                    8L to Ballot(arrayOf(cEmu, cWombat, cPlatypus, cKoala)),
+                ).toPreferences()
             )
         )
 

@@ -1,6 +1,9 @@
 package io.bouckaert.countback
 
+import io.bouckaert.countback.store.BallotStore
+
 class Countback(
+    val ballotStore: BallotStore,
     val resigningCandidatePile: VotePile,
     val originalQuota: Double,
     val eligibleCandidates: Set<Candidate>
@@ -18,12 +21,12 @@ class Countback(
         var count: Map<Candidate, VotePile> = VotePile(
             adjustedResults.votes.map {
                 VotePile.Vote(
-                    it.ballot,
+                    it.ballotId,
                     0,
                     it.transferValue
                 )
             }
-        ).groupByHighestPreference(eligibleCandidates).filterNotNull()
+        ).groupByHighestPreference(ballotStore, eligibleCandidates).filterNotNull()
 
         var countNumber = 1
 
@@ -77,6 +80,7 @@ class Countback(
                 if (verbose) writeOutput("Nobody can be elected this count, so the candidate with the fewest votes is eliminated: $excludedCandidate.", false)
 
                 count = count.removeCandidateAndDistributeRemainingVotes(
+                    ballotStore,
                     excludedCandidate,
                     quota(count.intoOnePile().count()),
                     countNumber,
@@ -96,7 +100,7 @@ class Countback(
         val finalCountPile = this.getPileAtCount(finalCount)
 
         // Distribute final count among eligible candidates
-        val finalCountDistributed = finalCountPile.groupByHighestPreference(eligibleCandidates)
+        val finalCountDistributed = finalCountPile.groupByHighestPreference(ballotStore, eligibleCandidates)
 
         // Calculate NCP, CP and N
         val ncp = finalCountDistributed[null]?.votes?.size?.toDouble() ?: 0.0
@@ -106,16 +110,16 @@ class Countback(
         return beforeFinalCountPile.plus(
             finalCountPile.votes.map { vote ->
                 VotePile.Vote(
-                    vote.ballot,
+                    vote.ballotId,
                     vote.atCount,
                     if (ncp * vote.transferValue >= quota - n) {
-                        if (vote.ballot.ranking.firstOrNull { it in eligibleCandidates } == null) {
+                        if (ballotStore.getHighestRankedCandidateForBallot(vote.ballotId, eligibleCandidates) == null) {
                             (quota - n) / ncp
                         } else {
                             0.0
                         }
                     } else {
-                        if (vote.ballot.ranking.firstOrNull { it in eligibleCandidates } == null) {
+                        if (ballotStore.getHighestRankedCandidateForBallot(vote.ballotId, eligibleCandidates) == null) {
                             vote.transferValue
                         } else {
                             (quota - n - (ncp * vote.transferValue)) / cp

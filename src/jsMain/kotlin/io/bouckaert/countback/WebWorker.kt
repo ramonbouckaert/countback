@@ -1,5 +1,6 @@
 package io.bouckaert.countback
 
+import io.bouckaert.countback.store.InMemoryBallotStore
 import org.w3c.dom.DedicatedWorkerGlobalScope
 import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
@@ -53,14 +54,14 @@ private suspend fun handleMessage(fileLoader: FileLoader, request: WebWorkerRequ
                             "Loading ballot data into memory, please be patient..."
                         )
                     )
-                    val election = fileLoader.loadElectionData(request.year, request.electorate).let {
-                        Election(
+                    val (candidates, ballotsIn) = fileLoader.loadElectionData(request.year, request.electorate)
+                    val ballotStore = InMemoryBallotStore(ballotsIn)
+                    val election = Election(
                             if (request.electorate == "Molonglo") 7 else 5,
-                            it.first,
-                            it.second,
+                            candidates,
+                            ballotStore,
                             request.year <= 2012
                         )
-                    }
                     respond(
                         WebWorkerResponse.Countback(
                             request.id,
@@ -105,6 +106,7 @@ private suspend fun handleMessage(fileLoader: FileLoader, request: WebWorkerRequ
                         else -> {
                             respond(WebWorkerResponse.Countback(request.id, "*** Starting countback ***", true))
                             Countback(
+                                ballotStore,
                                 resigningCandidatePile,
                                 initialDistribution.quota,
                                 filteredCandidatesToContest
@@ -135,7 +137,7 @@ private suspend fun FileLoader.loadCandidatesByElectorate(year: Int): Map<String
     return dataLoader.loadCandidates().groupBy { electorates[it.electorateCode] ?: throw IllegalStateException("No electorate found for ecode ${it.electorateCode}") }
 }
 
-private suspend fun FileLoader.loadElectionData(year: Int, electorate: String): Pair<Set<Candidate>, Collection<Ballot>> {
+private suspend fun FileLoader.loadElectionData(year: Int, electorate: String): Pair<Set<Candidate>, Sequence<Ballot>> {
     val dataLoader = ACTDataLoader("electiondata/$year/", this)
 
     val electorates = dataLoader.loadElectorates()

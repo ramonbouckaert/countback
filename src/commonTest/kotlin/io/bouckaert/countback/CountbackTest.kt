@@ -21,6 +21,7 @@ class CountbackTest {
             val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate(4, 7, 2, "JONES, Giulia")]!!
 
             val result = Countback(
+                electionResults.ballotStore,
                 resigningPile,
                 electionResults.quota,
                 setOf(
@@ -43,6 +44,7 @@ class CountbackTest {
             val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate(5, 2, 5, "COE, Alistair")]!!
 
             val result = Countback(
+                electionResults.ballotStore,
                 resigningPile,
                 electionResults.quota,
                 setOf(
@@ -65,6 +67,7 @@ class CountbackTest {
             val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate(3, 4, 2, "DOSZPOT, Steve")]!!
 
             val result = Countback(
+                electionResults.ballotStore,
                 resigningPile,
                 electionResults.quota,
                 setOf(
@@ -87,6 +90,7 @@ class CountbackTest {
             val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate(5, 4, 3, "FITZHARRIS, Meegan")]!!
 
             val result = Countback(
+                electionResults.ballotStore,
                 resigningPile,
                 electionResults.quota,
                 setOf(
@@ -111,6 +115,7 @@ class CountbackTest {
             val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate(1, 0, 1, "SESELJA, Zed")]!!
 
             val result = Countback(
+                electionResults.ballotStore,
                 resigningPile,
                 electionResults.quota,
                 setOf(
@@ -132,6 +137,7 @@ class CountbackTest {
             val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate(3, 5, 6, "GALLAGHER, Katy")]!!
 
             val result = Countback(
+                electionResults.ballotStore,
                 resigningPile,
                 electionResults.quota,
                 setOf(
@@ -155,6 +161,7 @@ class CountbackTest {
             val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate(2, 2, 2, "PORTER, Mary")]!!
 
             val result = Countback(
+                electionResults.ballotStore,
                 resigningPile,
                 electionResults.quota,
                 setOf(
@@ -178,6 +185,7 @@ class CountbackTest {
             val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate(1, 0, 4, "SMYTH, Brendan")]!!
 
             val result = Countback(
+                electionResults.ballotStore,
                 resigningPile,
                 electionResults.quota,
                 setOf(
@@ -201,6 +209,7 @@ class CountbackTest {
             val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate(2, 1, 2, "STANHOPE, Jon")]!!
 
             val result = Countback(
+                electionResults.ballotStore,
                 resigningPile,
                 electionResults.quota,
                 setOf(
