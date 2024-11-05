@@ -3,6 +3,7 @@ package io.bouckaert.countback
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class CandidateTest {
     @BeforeTest
@@ -44,5 +45,23 @@ class CandidateTest {
         assertEquals(pcode, sameCandidateFromId.partyCode)
         assertEquals(ccode, sameCandidateFromId.candidateCode)
         assertEquals(name, sameCandidateFromId.toString())
+    }
+
+    @Test
+    fun throwWhenCodesAreTooBig() {
+        val bigElectorateCodeException = assertFailsWith(IllegalArgumentException::class) {
+            Candidate(100, 1, 1, "Big Electorate Code Candidate")
+        }
+        assertEquals("Cannot construct a candidate with an electorate code of 100 as it is larger than the maximum of 63", bigElectorateCodeException.message)
+
+        val bigPartyCodeException = assertFailsWith(IllegalArgumentException::class) {
+            Candidate(1, 100, 1, "Big Party Code Candidate")
+        }
+        assertEquals("Cannot construct a candidate with a party code of 100 as it is larger than the maximum of 63", bigPartyCodeException.message)
+
+        val bigCandidateCodeException = assertFailsWith(IllegalArgumentException::class) {
+            Candidate(1, 1, 100, "Big Candidate Code Candidate")
+        }
+        assertEquals("Cannot construct a candidate with a candidate code of 100 as it is larger than the maximum of 63", bigCandidateCodeException.message)
     }
 }

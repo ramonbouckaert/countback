@@ -7,7 +7,11 @@ import kotlinx.serialization.Serializable
 value class Candidate(val id: Int) {
     constructor(electorateCode: Int, partyCode: Int, candidateCode: Int): this(
         (electorateCode shl 12) or (partyCode shl 6) or candidateCode
-    )
+    ) {
+        if (electorateCode > 0x3f) throw IllegalArgumentException("Cannot construct a candidate with an electorate code of $electorateCode as it is larger than the maximum of ${0x3f}")
+        if (partyCode > 0x3f) throw IllegalArgumentException("Cannot construct a candidate with a party code of $partyCode as it is larger than the maximum of ${0x3f}")
+        if (candidateCode > 0x3f) throw IllegalArgumentException("Cannot construct a candidate with a candidate code of $candidateCode as it is larger than the maximum of ${0x3f}")
+    }
     constructor(electorateCode: Int, partyCode: Int, candidateCode: Int, name: String): this(electorateCode, partyCode, candidateCode) {
         if (candidateMap.containsKey(this.id)) {
             if (candidateMap[this.id] != name) {
