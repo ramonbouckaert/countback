@@ -8,31 +8,31 @@ import kotlin.test.assertEquals
 class ElectionTest {
     companion object {
         suspend fun testRealElectorate(year: Int, electorate: String): Election.Results? {
-            val dataLoader = try {
-                ACTDataLoader(
+            try {
+                val dataLoader = ACTDataLoader(
                     "build/processedResources/js/main/electiondata/$year/",
                     createFileLoader()
                 )
+
+                val electoratesMap = dataLoader.loadElectorates()
+
+                val ecode = electoratesMap.entries.find { it.value == electorate }!!.key
+
+                val candidates = dataLoader.loadCandidates()
+
+                val votes = dataLoader.loadBallots(electorate, ecode)
+
+                val election = Election(
+                    numberOfVacancies = if (electorate == "Molonglo") 7 else 5,
+                    candidates = candidates,
+                    ballots = votes,
+                    roundCountToInt = year <= 2012
+                )
+
+                return election.performCount()
             } catch (e: FileLoader.Companion.FileLoadException) {
                 return null
             }
-
-            val electoratesMap = dataLoader.loadElectorates()
-
-            val ecode = electoratesMap.entries.find { it.value == electorate }!!.key
-
-            val candidates = dataLoader.loadCandidates()
-
-            val votes = dataLoader.loadBallots(electorate, ecode)
-
-            val election = Election(
-                numberOfVacancies = if (electorate == "Molonglo") 7 else 5,
-                candidates = candidates,
-                ballots = votes,
-                roundCountToInt = year <= 2012
-            )
-
-            return election.performCount()
         }
     }
 
