@@ -1,14 +1,13 @@
 package io.bouckaert.countback
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 private external fun require(module: String): dynamic
 private val fs = require("fs")
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ElectionTest {
     companion object {
         suspend fun testRealElectorate(year: Int, electorate: String): Election.Results {
@@ -20,15 +19,17 @@ class ElectionTest {
                 }
             )
 
-            val candidatesMap = dataLoader.loadCandidates(
-                    dataLoader.loadElectorates()
-                )[electorate]!!
+            val electoratesMap = dataLoader.loadElectorates()
 
-            val votes = dataLoader.loadBallots(electorate, candidatesMap)
+            val ecode = electoratesMap.entries.find { it.value == electorate }!!.key
+
+            val candidates = dataLoader.loadCandidates()
+
+            val votes = dataLoader.loadBallots(electorate, ecode)
 
             val election = Election(
                 numberOfVacancies = if (electorate == "Molonglo") 7 else 5,
-                candidates = candidatesMap.values.toSet(),
+                candidates = candidates,
                 ballots = votes,
                 roundCountToInt = year <= 2012
             )
@@ -37,12 +38,17 @@ class ElectionTest {
         }
     }
 
+    @BeforeTest
+    fun setUp() {
+        Candidate.clearCache()
+    }
+
     @Test
     fun simpleTest() = runTest {
-        val cPlatypus = Candidate("Platypus")
-        val cWombat = Candidate("Wombat")
-        val cEmu = Candidate("Emu")
-        val cKoala = Candidate("Koala")
+        val cPlatypus = Candidate(1, 1, 1, "Platypus")
+        val cWombat = Candidate(1, 1, 2, "Wombat")
+        val cEmu = Candidate(1, 1, 3, "Emu")
+        val cKoala = Candidate(1, 1, 4, "Koala")
 
         val election = Election(
             numberOfVacancies = 2,
@@ -61,7 +67,7 @@ class ElectionTest {
 
         val result = election.performCount()
 
-        assertEquals(result.winnersAndVotes.keys, setOf(cPlatypus, cEmu))
+        assertEquals(setOf(cPlatypus, cEmu), result.winnersAndVotes.keys)
     }
 
     // 2020 Election
@@ -70,11 +76,11 @@ class ElectionTest {
     fun murrumbidgee2020Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("HANSON, Jeremy"),
-                Candidate("STEEL, Chris"),
-                Candidate("JONES, Giulia"),
-                Candidate("PATERSON, Marisa"),
-                Candidate("DAVIDSON, Emma"),
+                Candidate(4, 7, 5, "HANSON, Jeremy"),
+                Candidate(4, 5, 3, "STEEL, Chris"),
+                Candidate(4, 7, 2, "JONES, Giulia"),
+                Candidate(4, 5, 4, "PATERSON, Marisa"),
+                Candidate(4, 3, 3, "DAVIDSON, Emma"),
             ),
             testRealElectorate(2020, "Murrumbidgee").winnersAndVotes.keys
         )
@@ -84,11 +90,11 @@ class ElectionTest {
     fun kurrajong2020Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("BARR, Andrew"),
-                Candidate("RATTENBURY, Shane"),
-                Candidate("STEPHEN-SMITH, Rachel"),
-                Candidate("LEE, Elizabeth"),
-                Candidate("VASSAROTTI, Rebecca"),
+                Candidate(3, 5, 3, "BARR, Andrew"),
+                Candidate(3, 1, 3, "RATTENBURY, Shane"),
+                Candidate(3, 5, 1, "STEPHEN-SMITH, Rachel"),
+                Candidate(3, 3, 3, "LEE, Elizabeth"),
+                Candidate(3, 1, 4, "VASSAROTTI, Rebecca"),
             ),
             testRealElectorate(2020,"Kurrajong").winnersAndVotes.keys
         )
@@ -98,11 +104,11 @@ class ElectionTest {
     fun brindabella2020Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("GENTLEMAN, Mick"),
-                Candidate("BURCH, Joy"),
-                Candidate("PARTON, Mark"),
-                Candidate("LAWDER, Nicole"),
-                Candidate("DAVIS, Johnathan"),
+                Candidate(1, 1, 4, "GENTLEMAN, Mick"),
+                Candidate(1, 1, 3, "BURCH, Joy"),
+                Candidate(1, 4, 1, "PARTON, Mark"),
+                Candidate(1, 4, 5, "LAWDER, Nicole"),
+                Candidate(1, 3, 1, "DAVIS, Johnathan"),
             ),
             testRealElectorate(2020, "Brindabella").winnersAndVotes.keys
         )
@@ -112,11 +118,11 @@ class ElectionTest {
     fun yerrabi2020Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("COE, Alistair"),
-                Candidate("ORR, Suzanne"),
-                Candidate("PETTERSSON, Michael"),
-                Candidate("BRADDOCK, Andrew"),
-                Candidate("CASTLEY, Leanne"),
+                Candidate(5, 2, 5, "COE, Alistair"),
+                Candidate(5, 8, 3, "ORR, Suzanne"),
+                Candidate(5, 8, 5, "PETTERSSON, Michael"),
+                Candidate(5, 3, 1, "BRADDOCK, Andrew"),
+                Candidate(5, 2, 4, "CASTLEY, Leanne"),
             ),
             testRealElectorate(2020, "Yerrabi").winnersAndVotes.keys
         )
@@ -126,11 +132,11 @@ class ElectionTest {
     fun ginninderra2020Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("BERRY, Yvette"),
-                Candidate("KIKKERT, Elizabeth"),
-                Candidate("CHEYNE, Tara"),
-                Candidate("CLAY, Jo"),
-                Candidate("CAIN, Peter"),
+                Candidate(2, 10, 2, "BERRY, Yvette"),
+                Candidate(2, 7, 2, "KIKKERT, Elizabeth"),
+                Candidate(2, 10, 1, "CHEYNE, Tara"),
+                Candidate(2, 9, 2, "CLAY, Jo"),
+                Candidate(2, 7, 5, "CAIN, Peter"),
             ),
             testRealElectorate(2020, "Ginninderra").winnersAndVotes.keys
         )
@@ -142,11 +148,11 @@ class ElectionTest {
     fun murrumbidgee2016Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("HANSON, Jeremy"),
-                Candidate("STEEL, Chris"),
-                Candidate("JONES, Giulia"),
-                Candidate("CODY, Bec"),
-                Candidate("LE COUTEUR, Caroline"),
+                Candidate(4, 3, 3, "HANSON, Jeremy"),
+                Candidate(4, 1, 1, "STEEL, Chris"),
+                Candidate(4, 3, 4, "JONES, Giulia"),
+                Candidate(4, 1, 4, "CODY, Bec"),
+                Candidate(4, 7, 1, "LE COUTEUR, Caroline"),
             ),
             testRealElectorate(2016, "Murrumbidgee").winnersAndVotes.keys
         )
@@ -156,11 +162,11 @@ class ElectionTest {
     fun kurrajong2016Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("BARR, Andrew"),
-                Candidate("RATTENBURY, Shane"),
-                Candidate("STEPHEN-SMITH, Rachel"),
-                Candidate("LEE, Elizabeth"),
-                Candidate("DOSZPOT, Steve"),
+                Candidate(3, 0, 2, "BARR, Andrew"),
+                Candidate(3, 2, 0, "RATTENBURY, Shane"),
+                Candidate(3, 0, 1, "STEPHEN-SMITH, Rachel"),
+                Candidate(3, 4, 4, "LEE, Elizabeth"),
+                Candidate(3, 4, 2, "DOSZPOT, Steve"),
             ),
             testRealElectorate(2016,"Kurrajong").winnersAndVotes.keys,
         )
@@ -170,11 +176,11 @@ class ElectionTest {
     fun brindabella2016Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("GENTLEMAN, Mick"),
-                Candidate("BURCH, Joy"),
-                Candidate("PARTON, Mark"),
-                Candidate("LAWDER, Nicole"),
-                Candidate("WALL, Andrew"),
+                Candidate(1, 4, 1, "GENTLEMAN, Mick"),
+                Candidate(1, 4, 0, "BURCH, Joy"),
+                Candidate(1, 1, 1, "PARTON, Mark"),
+                Candidate(1, 1, 4, "LAWDER, Nicole"),
+                Candidate(1, 1, 3, "WALL, Andrew"),
             ),
             testRealElectorate(2016, "Brindabella").winnersAndVotes.keys
         )
@@ -184,11 +190,11 @@ class ElectionTest {
     fun yerrabi2016Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("COE, Alistair"),
-                Candidate("ORR, Suzanne"),
-                Candidate("PETTERSSON, Michael"),
-                Candidate("FITZHARRIS, Meegan"),
-                Candidate("MILLIGAN, James"),
+                Candidate(5, 1, 0, "COE, Alistair"),
+                Candidate(5, 4, 1, "ORR, Suzanne"),
+                Candidate(5, 4, 0, "PETTERSSON, Michael"),
+                Candidate(5, 4, 3, "FITZHARRIS, Meegan"),
+                Candidate(5, 1, 3, "MILLIGAN, James"),
             ),
             testRealElectorate(2016, "Yerrabi").winnersAndVotes.keys
         )
@@ -198,11 +204,11 @@ class ElectionTest {
     fun ginninderra2016Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("BERRY, Yvette"),
-                Candidate("DUNNE, Vicki"),
-                Candidate("CHEYNE, Tara"),
-                Candidate("KIKKERT, Elizabeth"),
-                Candidate("RAMSAY, Gordon"),
+                Candidate(2, 1, 0, "BERRY, Yvette"),
+                Candidate(2, 3, 4, "DUNNE, Vicki"),
+                Candidate(2, 1, 1, "CHEYNE, Tara"),
+                Candidate(2, 3, 2, "KIKKERT, Elizabeth"),
+                Candidate(2, 1, 2, "RAMSAY, Gordon"),
             ),
             testRealElectorate(2016, "Ginninderra").winnersAndVotes.keys
         )
@@ -214,13 +220,13 @@ class ElectionTest {
     fun molonglo2012Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("BARR, Andrew"),
-                Candidate("CORBELL, Simon"),
-                Candidate("GALLAGHER, Katy"),
-                Candidate("HANSON, Jeremy"),
-                Candidate("DOSZPOT, Steve"),
-                Candidate("JONES, Giulia"),
-                Candidate("RATTENBURY, Shane"),
+                Candidate(3, 5, 5, "BARR, Andrew"),
+                Candidate(3, 5, 2, "CORBELL, Simon"),
+                Candidate(3, 5, 6, "GALLAGHER, Katy"),
+                Candidate(3, 3, 5, "HANSON, Jeremy"),
+                Candidate(3, 3, 1, "DOSZPOT, Steve"),
+                Candidate(3, 3, 6, "JONES, Giulia"),
+                Candidate(3, 0, 2, "RATTENBURY, Shane"),
             ),
             testRealElectorate(2012,"Molonglo").winnersAndVotes.keys,
         )
@@ -230,11 +236,11 @@ class ElectionTest {
     fun brindabella2012Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("GENTLEMAN, Mick"),
-                Candidate("BURCH, Joy"),
-                Candidate("SESELJA, Zed"),
-                Candidate("SMYTH, Brendan"),
-                Candidate("WALL, Andrew"),
+                Candidate(1, 2, 3, "GENTLEMAN, Mick"),
+                Candidate(1, 2, 0, "BURCH, Joy"),
+                Candidate(1, 0, 1, "SESELJA, Zed"),
+                Candidate(1, 0, 4, "SMYTH, Brendan"),
+                Candidate(1, 0, 0, "WALL, Andrew"),
             ),
             testRealElectorate(2012, "Brindabella").winnersAndVotes.keys
         )
@@ -245,11 +251,11 @@ class ElectionTest {
     fun ginninderra2012Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("BERRY, Yvette"),
-                Candidate("DUNNE, Vicki"),
-                Candidate("COE, Alistair"),
-                Candidate("BOURKE, Chris"),
-                Candidate("PORTER, Mary"),
+                Candidate(2, 2, 3, "BERRY, Yvette"),
+                Candidate(2, 5, 4, "DUNNE, Vicki"),
+                Candidate(2, 5, 0, "COE, Alistair"),
+                Candidate(2, 2, 1, "BOURKE, Chris"),
+                Candidate(2, 2, 2, "PORTER, Mary"),
             ),
             testRealElectorate(2012, "Ginninderra").winnersAndVotes.keys
         )
@@ -261,13 +267,13 @@ class ElectionTest {
     fun molonglo2008Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("BARR, Andrew"),
-                Candidate("CORBELL, Simon"),
-                Candidate("GALLAGHER, Katy"),
-                Candidate("HANSON, Jeremy"),
-                Candidate("Le COUTEUR, Caroline"),
-                Candidate("SESELJA, Zed"),
-                Candidate("RATTENBURY, Shane"),
+                Candidate(3, 1, 2, "BARR, Andrew"),
+                Candidate(3, 1, 1, "CORBELL, Simon"),
+                Candidate(3, 1, 4, "GALLAGHER, Katy"),
+                Candidate(3, 7, 2, "HANSON, Jeremy"),
+                Candidate(3, 6, 1, "Le COUTEUR, Caroline"),
+                Candidate(3, 7, 1, "SESELJA, Zed"),
+                Candidate(3, 6, 0, "RATTENBURY, Shane"),
             ),
             testRealElectorate(2008,"Molonglo").winnersAndVotes.keys,
         )
@@ -277,11 +283,11 @@ class ElectionTest {
     fun brindabella2008Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("BRESNAN, Amanda"),
-                Candidate("BURCH, Joy"),
-                Candidate("DOSZPOT, Steve"),
-                Candidate("HARGREAVES, John"),
-                Candidate("SMYTH, Brendan"),
+                Candidate(1, 3, 0, "BRESNAN, Amanda"),
+                Candidate(1, 4, 1, "BURCH, Joy"),
+                Candidate(1, 0, 3, "DOSZPOT, Steve"),
+                Candidate(1, 4, 4, "HARGREAVES, John"),
+                Candidate(1, 0, 0, "SMYTH, Brendan"),
             ),
             testRealElectorate(2008, "Brindabella").winnersAndVotes.keys
         )
@@ -292,11 +298,11 @@ class ElectionTest {
     fun ginninderra2008Test() = runTest {
         assertEquals(
             setOf(
-                Candidate("STANHOPE, Jon"),
-                Candidate("DUNNE, Vicki"),
-                Candidate("COE, Alistair"),
-                Candidate("HUNTER, Meredith"),
-                Candidate("PORTER, Mary"),
+                Candidate(2, 1, 2, "STANHOPE, Jon"),
+                Candidate(2, 4, 0, "DUNNE, Vicki"),
+                Candidate(2, 4, 2, "COE, Alistair"),
+                Candidate(2, 3, 1, "HUNTER, Meredith"),
+                Candidate(2, 1, 1, "PORTER, Mary"),
             ),
             testRealElectorate(2008, "Ginninderra").winnersAndVotes.keys
         )

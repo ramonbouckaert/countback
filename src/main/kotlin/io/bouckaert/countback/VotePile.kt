@@ -3,9 +3,9 @@ package io.bouckaert.countback
 import kotlin.math.min
 
 class VotePile(
-    val votes: List<Vote> = emptyList()
+    val votes: Collection<Vote> = emptyList()
 ) {
-    constructor(ballots: List<Ballot>, atCount: Int, transferValue: Double): this(
+    constructor(ballots: Collection<Ballot>, atCount: Int, transferValue: Double): this(
         ballots.map { Vote(it, atCount, transferValue) }
     )
 

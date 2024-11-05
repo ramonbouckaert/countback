@@ -2,7 +2,6 @@ package io.bouckaert.countback
 
 import org.w3c.dom.DedicatedWorkerGlobalScope
 import kotlinx.coroutines.*
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.w3c.dom.MessageEvent
@@ -35,7 +34,7 @@ private suspend fun handleMessage(request: WebWorkerRequest, respond: (response:
         is WebWorkerRequest.Candidates -> respond(
             WebWorkerResponse.Candidates(
                 request.id,
-                loadCandidates(request.year)
+                loadCandidatesByElectorate(request.year)
             )
         )
         is WebWorkerRequest.Countback -> {
@@ -127,22 +126,22 @@ private suspend fun handleMessage(request: WebWorkerRequest, respond: (response:
     }
 }
 
-private suspend fun loadCandidates(year: Int): Map<String, Collection<Candidate>> {
+private suspend fun loadCandidatesByElectorate(year: Int): Map<String, Collection<Candidate>> {
     val dataLoader = ACTDataLoader("electiondata/$year/")
 
-    return dataLoader.loadCandidates(
-        dataLoader.loadElectorates()
-    ).mapValues { it.value.values }
+    val electorates = dataLoader.loadElectorates()
+
+    return dataLoader.loadCandidates().groupBy { electorates[it.electorateCode] ?: throw IllegalStateException("No electorate found for ecode ${it.electorateCode}") }
 }
 
-private suspend fun loadElectionData(year: Int, electorate: String): Pair<Set<Candidate>, List<Ballot>> {
+private suspend fun loadElectionData(year: Int, electorate: String): Pair<Set<Candidate>, Collection<Ballot>> {
     val dataLoader = ACTDataLoader("electiondata/$year/")
 
-    val candidatesMap = dataLoader.loadCandidates(
-        dataLoader.loadElectorates()
-    )[electorate]!!
+    val electorates = dataLoader.loadElectorates()
 
-    val ballots = dataLoader.loadBallots(electorate, candidatesMap)
+    val candidates = dataLoader.loadCandidates()
 
-    return candidatesMap.values.toSet() to ballots
+    val ballots = dataLoader.loadBallots(electorate, electorates.entries.find { it.value == electorate }!!.key)
+
+    return candidates to ballots
 }

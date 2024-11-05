@@ -1,6 +1,6 @@
 plugins {
-    kotlin("js") version "1.8.10"
-    kotlin("plugin.serialization") version "1.8.10"
+    kotlin("js") version "2.0.21"
+    kotlin("plugin.serialization") version "2.0.21"
     id("org.siouan.frontend-jdk11") version "6.0.0"
 }
 
@@ -12,12 +12,12 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
-    implementation("com.github.doyaaaaaken:kotlin-csv:1.8.0")
-    implementation("io.ktor:ktor-client-js:2.1.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("com.github.doyaaaaaken:kotlin-csv:1.10.0")
+    implementation("io.ktor:ktor-client-js:3.0.1")
     testImplementation(kotlin("test-js"))
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 }
 
 kotlin {

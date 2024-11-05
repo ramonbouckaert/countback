@@ -3,7 +3,7 @@ package io.bouckaert.countback
 class Election(
     val numberOfVacancies: Int,
     val candidates: Set<Candidate>,
-    val ballots: List<Ballot>,
+    val ballots: Collection<Ballot>,
     val roundCountToInt: Boolean = false
 ) {
     init {
@@ -46,7 +46,7 @@ class Election(
 
         // If there are fewer candidates than positions, all are elected by default
         if (count.size < numberOfVacancies) {
-            if (verbose) writeOutput("The number of eligible candidates is fewer than the number of vacancies, so all candidates are elected", true)
+            if (verbose) writeOutput("The number of eligible candidates (${count.size}) is fewer than the number of vacancies ($numberOfVacancies), so all candidates are elected", true)
             return Results(count.filterNotNull(), quota)
         }
 
@@ -57,7 +57,7 @@ class Election(
             var electedThisLoop = false
 
             // Elect any candidate with more first preference votes than the quota
-            var newCount = count.entries.map { it.key to it.value }.toMap()
+            var newCount = count.entries.associate { it.key to it.value }
             if (roundCountToInt) newCount = newCount.mapValues { (_, votePile) -> votePile.roundDownToInt() }
             count.sortedByDescending().forEach { (candidate) ->
                 val votePile = newCount[candidate]
