@@ -5,21 +5,15 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-private external fun require(module: String): dynamic
-private val fs = require("fs")
-
 class ElectionTest {
     companion object {
         suspend fun testRealElectorate(year: Int, electorate: String): Election.Results? {
             val dataLoader = try {
                 ACTDataLoader(
-                    "../../../processedResources/js/main/electiondata/$year/",
-                    object : ACTDataLoader.FileLoader {
-                        override suspend fun loadFile(path: String): String =
-                            fs.readFileSync(path, "utf8") as String
-                    }
+                    "build/processedResources/js/main/electiondata/$year/",
+                    createFileLoader()
                 )
-            } catch (e: ACTDataLoader.Companion.FileLoadException) {
+            } catch (e: FileLoader.Companion.FileLoadException) {
                 return null
             }
 

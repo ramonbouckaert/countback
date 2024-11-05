@@ -1,5 +1,5 @@
 plugins {
-    kotlin("js") version "2.0.21"
+    kotlin("multiplatform") version "2.0.21"
     kotlin("plugin.serialization") version "2.0.21"
     id("org.siouan.frontend-jdk11") version "6.0.0"
 }
@@ -11,23 +11,28 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-    implementation("com.github.doyaaaaaken:kotlin-csv:1.10.0")
-    implementation("io.ktor:ktor-client-js:3.0.1")
-    testImplementation(kotlin("test-js"))
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
-}
-
 kotlin {
     js {
         binaries.executable()
         browser {
             testTask {
                 useMocha {
-                    timeout = "60000ms"
+                    timeout = "10000ms"
                 }
+            }
+        }
+    }
+    jvm()
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+                implementation("com.github.doyaaaaaken:kotlin-csv:1.10.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+                implementation("co.touchlab:stately-concurrent-collections:2.0.0")
+                implementation(kotlin("test"))
             }
         }
     }
@@ -55,7 +60,7 @@ tasks.named("cleanFrontend") {
 
 frontend {
     nodeVersion.set("16.15.1")
-    packageJsonDirectory.set(layout.projectDirectory.dir("src/main/client").asFile)
+    packageJsonDirectory.set(layout.projectDirectory.dir("src/commonMain/client").asFile)
     assembleScript.set("run build")
     cleanScript.set("run clean")
 }

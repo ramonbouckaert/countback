@@ -1,8 +1,8 @@
-/src/main/client/node_modules/
+/src/commonMain/client/node_modules/
 /target/
 /.idea/
-/src/main/client/.idea/
-/src/main/client/build/
-/src/main/resources/webroot/
-/src/main/client/node/
-/src/main/resources/electiondata/
+/src/commonMain/client/.idea/
+/src/commonMain/client/build/
+/src/commonMain/resources/webroot/
+/src/commonMain/client/node/
+/src/commonMain/resources/electiondata/

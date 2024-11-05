@@ -9,11 +9,12 @@ import org.w3c.dom.MessageEvent
 external val self: DedicatedWorkerGlobalScope
 
 fun main() {
+    val fileLoader = JsFileLoader()
     self.addEventListener("message", { event ->
         if (event is MessageEvent) {
             GlobalScope.launch {
                 try {
-                    handleMessage(Json.decodeFromString(event.data as String)) { response ->
+                    handleMessage(fileLoader, Json.decodeFromString(event.data as String)) { response ->
                         self.postMessage(Json.encodeToString(response))
                     }
                 } catch (t: Throwable) {
@@ -29,12 +30,12 @@ fun main() {
     self.postMessage(Json.encodeToString(WebWorkerResponse.Ready() as WebWorkerResponse))
 }
 
-private suspend fun handleMessage(request: WebWorkerRequest, respond: (response: WebWorkerResponse) -> Unit) {
+private suspend fun handleMessage(fileLoader: FileLoader, request: WebWorkerRequest, respond: (response: WebWorkerResponse) -> Unit) {
     when (request) {
         is WebWorkerRequest.Candidates -> respond(
             WebWorkerResponse.Candidates(
                 request.id,
-                loadCandidatesByElectorate(request.year)
+                fileLoader.loadCandidatesByElectorate(request.year)
             )
         )
         is WebWorkerRequest.Countback -> {
@@ -52,7 +53,7 @@ private suspend fun handleMessage(request: WebWorkerRequest, respond: (response:
                             "Loading ballot data into memory, please be patient..."
                         )
                     )
-                    val election = loadElectionData(request.year, request.electorate).let {
+                    val election = fileLoader.loadElectionData(request.year, request.electorate).let {
                         Election(
                             if (request.electorate == "Molonglo") 7 else 5,
                             it.first,
@@ -126,16 +127,16 @@ private suspend fun handleMessage(request: WebWorkerRequest, respond: (response:
     }
 }
 
-private suspend fun loadCandidatesByElectorate(year: Int): Map<String, Collection<Candidate>> {
-    val dataLoader = ACTDataLoader("electiondata/$year/")
+private suspend fun FileLoader.loadCandidatesByElectorate(year: Int): Map<String, Collection<Candidate>> {
+    val dataLoader = ACTDataLoader("electiondata/$year/", this)
 
     val electorates = dataLoader.loadElectorates()
 
     return dataLoader.loadCandidates().groupBy { electorates[it.electorateCode] ?: throw IllegalStateException("No electorate found for ecode ${it.electorateCode}") }
 }
 
-private suspend fun loadElectionData(year: Int, electorate: String): Pair<Set<Candidate>, Collection<Ballot>> {
-    val dataLoader = ACTDataLoader("electiondata/$year/")
+private suspend fun FileLoader.loadElectionData(year: Int, electorate: String): Pair<Set<Candidate>, Collection<Ballot>> {
+    val dataLoader = ACTDataLoader("electiondata/$year/", this)
 
     val electorates = dataLoader.loadElectorates()
 

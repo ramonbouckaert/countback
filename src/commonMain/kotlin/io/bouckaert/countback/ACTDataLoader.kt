@@ -1,29 +1,11 @@
 package io.bouckaert.countback
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import io.ktor.client.*
-import io.ktor.client.engine.js.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
 
 class ACTDataLoader(
     private val basePath: String,
-    private val fileLoader: FileLoader = object : FileLoader {
-        private val client = HttpClient(Js)
-        override suspend fun loadFile(path: String): String {
-            val result = client.get(path)
-            if (result.status === HttpStatusCode.NotFound) throw FileLoadException("File $path could not be found")
-            return client.get(path).bodyAsText()
-        }
-    }
+    private val fileLoader: FileLoader
 ) {
-    companion object {
-        class FileLoadException(message: String): Exception(message)
-    }
-    interface FileLoader {
-        suspend fun loadFile(path: String): String
-    }
 
     private val csvReader = csvReader()
 

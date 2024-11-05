@@ -1,8 +1,10 @@
 package io.bouckaert.countback
 
-import io.ktor.util.collections.*
+import co.touchlab.stately.collections.ConcurrentMutableMap
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
+@JvmInline
 @Serializable
 value class Candidate(val id: Int) {
     constructor(electorateCode: Int, partyCode: Int, candidateCode: Int): this(
@@ -20,7 +22,7 @@ value class Candidate(val id: Int) {
         } else candidateMap[this.id] = name
     }
     companion object {
-        val candidateMap = ConcurrentMap<Int, String>()
+        val candidateMap = ConcurrentMutableMap<Int, String>()
         fun clearCache() {
             candidateMap.clear()
         }
