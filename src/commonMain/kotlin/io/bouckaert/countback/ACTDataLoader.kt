@@ -1,13 +1,9 @@
 package io.bouckaert.countback
 
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-
 class ACTDataLoader(
     private val basePath: String,
     private val fileLoader: FileLoader
 ) {
-
-    private val csvReader = csvReader()
 
     suspend fun loadElectorates(): Map<Int, String> = readFromPath("${basePath}Electorates.txt")
         .associateBy({ it["ecode"]?.toInt() }) { it["electorate"] }
@@ -38,6 +34,15 @@ class ACTDataLoader(
             }
             .mapNotNull { Ballot(it.value) }
 
-    private suspend fun readFromPath(path: String): List<Map<String, String>> =
-        fileLoader.loadFile(path).let(csvReader::readAllWithHeader)
+    private suspend fun readFromPath(path: String): Sequence<Map<String, String>> {
+        val sequence = fileLoader.loadFile(path)
+        var header: List<String>? = null
+        return sequence.mapNotNull { line ->
+            if (header == null) {
+                header = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)".toRegex()).map { it.trim('"') }
+                return@mapNotNull null
+            }
+            line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)".toRegex()).mapIndexed { index, element -> header!![index] to element.trim('"') }.toMap()
+        }
+    }
 }

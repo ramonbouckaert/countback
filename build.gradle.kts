@@ -29,10 +29,14 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-                implementation("com.github.doyaaaaaken:kotlin-csv:1.10.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
                 implementation("co.touchlab:stately-concurrent-collections:2.0.0")
                 implementation(kotlin("test"))
+            }
+        }
+        jsMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.5.4")
             }
         }
     }
