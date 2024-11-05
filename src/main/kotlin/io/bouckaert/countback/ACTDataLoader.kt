@@ -52,7 +52,7 @@ class ACTDataLoader(
                 entry["pref"]?.toInt() to Candidate(ecode, pcode, ccode)
             }
             .mapValues { entry ->
-                linkedSetOf(*entry.value.sortedBy { it.first }.map { it.second }.toTypedArray())
+                entry.value.sortedBy { it.first }.map { it.second }.toTypedArray()
             }
             .mapNotNull { Ballot(it.value) }
 

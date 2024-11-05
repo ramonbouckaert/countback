@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 value class Candidate(val id: Int) {
     constructor(electorateCode: Int, partyCode: Int, candidateCode: Int): this(
-        (electorateCode shl 20) or (partyCode shl 10) or candidateCode
+        (electorateCode shl 12) or (partyCode shl 6) or candidateCode
     )
     constructor(electorateCode: Int, partyCode: Int, candidateCode: Int, name: String): this(electorateCode, partyCode, candidateCode) {
         if (candidateMap.containsKey(this.id)) {
@@ -23,7 +23,7 @@ value class Candidate(val id: Int) {
     }
     override fun toString(): String = candidateMap[this.id] ?: throw IllegalStateException("Candidate with ID ${this.id} doesn't exist")
 
-    val electorateCode: Int get() = this.id shr 20
-    val partyCode: Int get() = (this.id shr 10) and 0x3ff
-    val candidateCode: Int get() = this.id and 0x3ff
+    val electorateCode: Int get() = this.id shr 12
+    val partyCode: Int get() = (this.id shr 6) and 0x3f
+    val candidateCode: Int get() = this.id and 0x3f
 }

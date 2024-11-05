@@ -54,14 +54,14 @@ class ElectionTest {
             numberOfVacancies = 2,
             candidates = setOf(cPlatypus, cWombat, cEmu, cKoala),
             ballots = listOf(
-                Ballot(linkedSetOf(cPlatypus, cKoala, cWombat, cEmu)),
-                Ballot(linkedSetOf(cPlatypus, cKoala, cWombat, cEmu)),
-                Ballot(linkedSetOf(cWombat, cEmu, cKoala, cPlatypus)),
-                Ballot(linkedSetOf(cKoala, cPlatypus, cEmu, cWombat)),
-                Ballot(linkedSetOf(cEmu, cWombat, cPlatypus, cKoala)),
-                Ballot(linkedSetOf(cEmu, cPlatypus, cWombat, cKoala)),
-                Ballot(linkedSetOf(cPlatypus, cKoala, cEmu, cWombat)),
-                Ballot(linkedSetOf(cEmu, cWombat, cPlatypus, cKoala)),
+                Ballot(arrayOf(cPlatypus, cKoala, cWombat, cEmu)),
+                Ballot(arrayOf(cPlatypus, cKoala, cWombat, cEmu)),
+                Ballot(arrayOf(cWombat, cEmu, cKoala, cPlatypus)),
+                Ballot(arrayOf(cKoala, cPlatypus, cEmu, cWombat)),
+                Ballot(arrayOf(cEmu, cWombat, cPlatypus, cKoala)),
+                Ballot(arrayOf(cEmu, cPlatypus, cWombat, cKoala)),
+                Ballot(arrayOf(cPlatypus, cKoala, cEmu, cWombat)),
+                Ballot(arrayOf(cEmu, cWombat, cPlatypus, cKoala)),
             )
         )
 
