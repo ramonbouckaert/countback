@@ -11,7 +11,7 @@ class Countback(
     
     fun quota(totalVotesAllotted: Double) = (totalVotesAllotted / 2.0) + 1.0
 
-    fun performCount(
+    suspend fun performCount(
         verbose: Boolean = false,
         writeOutput: (String, newParagraph: Boolean) -> Unit = { _, _ -> }
     ): Pair<Candidate, VotePile> {
@@ -93,7 +93,7 @@ class Countback(
         }
     }
 
-    private fun VotePile.adjustFinalCountForCountback(quota: Double): VotePile {
+    private suspend fun VotePile.adjustFinalCountForCountback(quota: Double): VotePile {
         // Split vote pile into before final count and the final count
         val finalCount = this.findFinalCount()
         val beforeFinalCountPile = this.getPileBeforeCount(finalCount)

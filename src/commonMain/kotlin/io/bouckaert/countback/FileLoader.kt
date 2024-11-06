@@ -1,9 +1,9 @@
 package io.bouckaert.countback
 
-interface FileLoader {
-    suspend fun loadFile(path: String): Sequence<String>
+import kotlinx.coroutines.flow.Flow
 
-    companion object {
-        class FileLoadException(message: String): Exception(message)
-    }
+interface FileLoader {
+    suspend fun loadFile(path: String): Flow<String>
+
+    class FileLoadException(message: String): Exception(message)
 }

@@ -16,8 +16,8 @@ kotlin {
         binaries.executable()
         browser {
             testTask {
-                useMocha {
-                    timeout = "10000ms"
+                useKarma {
+                    useChromeHeadless()
                 }
             }
         }
@@ -36,15 +36,15 @@ kotlin {
         }
         jsMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.5.4")
+                implementation("io.ktor:ktor-client-js:3.0.1")
             }
         }
     }
 }
 
 tasks.register<Copy>("copyWebWorker") {
-    from(layout.buildDirectory.file("distributions/"))
-    into(layout.projectDirectory.dir("src/main/client/public"))
+    from(layout.buildDirectory.file("dist/js/productionExecutable"))
+    into(layout.projectDirectory.dir("src/commonMain/client/public"))
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     finalizedBy("assembleFrontend")
 }.get()

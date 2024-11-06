@@ -6,7 +6,7 @@ import kotlin.math.min
 class VotePile(
     val votes: Collection<Vote> = emptyList()
 ) {
-    constructor(ballotIds: Collection<Int>, atCount: Int, transferValue: Double): this(
+    constructor(ballotIds: Collection<Long>, atCount: Int, transferValue: Double): this(
         ballotIds.map { Vote(it, atCount, transferValue) }
     )
 
@@ -27,7 +27,7 @@ class VotePile(
         votes.minus(subtractVotes.votes.toSet())
     )
 
-    fun groupByHighestPreference(
+    suspend fun groupByHighestPreference(
         store: BallotStore,
         ofCandidates: Collection<Candidate?>
     ): Map<Candidate?, VotePile> =
@@ -76,12 +76,11 @@ class VotePile(
     }
 
     class Vote(
-        val ballotId: Int,
+        val ballotId: Long,
         val atCount: Int = 0,
         val transferValue: Double = 1.0,
     ) {
         override fun toString(): String = "${ballotId}@$transferValue"
-        fun toString(store: BallotStore) = "${store.getFullBallot(ballotId)}@$transferValue"
     }
 
     override fun toString(): String = "${votes.size} ballots worth ${count().toFloat()} votes"

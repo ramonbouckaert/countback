@@ -11,7 +11,7 @@ class ElectionTest {
         suspend fun testRealElectorate(year: Int, electorate: String): Election.Results? {
             try {
                 val dataLoader = ACTDataLoader(
-                    "build/processedResources/js/main/electiondata/$year/",
+                    "electiondata/$year/",
                     createFileLoader()
                 )
 

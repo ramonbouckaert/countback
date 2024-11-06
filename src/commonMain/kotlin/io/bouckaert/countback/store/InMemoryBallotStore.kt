@@ -1,18 +1,28 @@
 package io.bouckaert.countback.store
 
-import io.bouckaert.countback.Ballot
-import io.bouckaert.countback.Candidate
+import io.bouckaert.countback.*
+import kotlinx.coroutines.flow.Flow
 
 class InMemoryBallotStore(
-    ballotsIn: Sequence<Ballot>
+    private val preferencesIn: Flow<Preference>
 ): BallotStore {
-    private val ballots = ballotsIn.mapIndexed { index: Int, ballot: Ballot -> index to ballot }.toMap()
-    override val size: Int = ballots.size
+    private var ballots: Map<Long, Ballot>? = null
+    override suspend fun getSize(): Int = getBallots().size
 
-    override fun getAllBallotIds(): Collection<Int> = ballots.keys
+    override suspend fun getAllBallotIds(): Collection<Long> = getBallots().keys
 
-    override fun getFullBallot(ballotId: Int): Ballot = ballots[ballotId] ?: throw IllegalStateException("Could not find ballot for ID $ballotId")
-
-    override fun getHighestRankedCandidateForBallot(ballotId: Int, ofList: Collection<Candidate>?): Candidate? =
+    override suspend fun getHighestRankedCandidateForBallot(ballotId: Long, ofList: Collection<Candidate>?): Candidate? =
         getFullBallot(ballotId).ranking.firstOrNull { if (ofList == null) true else it in ofList }
+
+    override suspend fun close() {
+        ballots = null
+    }
+
+    private suspend fun getFullBallot(ballotId: Long): Ballot = getBallots()[ballotId] ?: throw IllegalStateException("Could not find ballot for ID $ballotId")
+
+    private suspend fun getBallots(): Map<Long, Ballot> {
+        return ballots ?: run {
+            preferencesIn.toBallotsWithIds().also { ballots = it }
+        }
+    }
 }

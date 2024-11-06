@@ -1,6 +1,10 @@
 package io.bouckaert.countback
 
 import io.bouckaert.countback.store.BallotStore
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.*
 
 fun <K, V> Map<out K?, V?>.filterNotNull(): Map<K, V> = this.mapNotNull {
     it.key?.let { key ->
@@ -14,7 +18,7 @@ fun <C> Map<out C, VotePile>.intoOnePile(): VotePile = this.values.fold(VotePile
 
 fun Collection<VotePile>.intoOnePile(): VotePile = this.fold(VotePile()) { a, v -> a.plus(v) }
 
-fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
+suspend fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
     ballotStore: BallotStore,
     candidateToRemove: Candidate,
     quota: Double,
@@ -61,3 +65,43 @@ fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
 }
 
 fun Map<Candidate, VotePile>.sortedByDescending() = this.entries.sortedByDescending { (_, votePile) -> votePile.count() }.map { it.key to it.value }.toMap()
+
+suspend inline fun Flow<Preference>.toBallotsWithIds(): Map<Long, Ballot> = this
+    .groupToList { it.ballotId }
+    .map { preferences -> preferences.first to Ballot(preferences.second.map { it.candidate }.toTypedArray()) }
+    .toMap()
+
+inline fun <T, K> Flow<T>.groupToList(crossinline getKey: (T) -> K): Flow<Pair<K, List<T>>> = flow {
+    val storage = mutableMapOf<K, MutableList<T>>()
+    collect { t -> storage.getOrPut(getKey(t)) { mutableListOf() } += t }
+    storage.forEach { (k, ts) -> emit(k to ts) }
+}
+
+suspend inline fun <K, V> Flow<Pair<K, V>>.toMap(destination: MutableMap<K, V> = mutableMapOf()): Map<K, V> {
+    collect { (k, v) -> destination[k] = v }
+    return destination
+}
+
+fun Map<Long, Ballot>.toPreferences(): Flow<Preference> = this.entries.flatMap { (ballotId, ballot) ->
+    ballot.ranking.mapIndexed { index, candidate -> Preference(ballotId, candidate, index + 1) }
+}.asFlow()
+
+suspend inline fun <A, B> Iterable<A>.mapParallel(crossinline f: suspend (A) -> B): List<B> = coroutineScope {
+    map { async { f(it) } }.awaitAll()
+}
+
+suspend inline fun <A, B> Iterable<A>.forEachParallel(awaitAll: Boolean = true, crossinline f: suspend (A) -> B): Unit = coroutineScope {
+    if (awaitAll) map { async { f(it) } }.awaitAll() else forEach {
+        @Suppress("DeferredResultUnused")
+        async { f(it) }
+    }
+}
+
+suspend inline fun <K, V, M : MutableMap<K, V>> Collection<K>.associateWithParallel(crossinline valueSelector: suspend (K) -> V): M {
+    val destination = LinkedHashMap<K, V>(this.size)
+    this.forEachParallel { element ->
+        destination[element] = valueSelector(element)
+    }
+    @Suppress("UNCHECKED_CAST")
+    return destination.toMutableMap() as M
+}

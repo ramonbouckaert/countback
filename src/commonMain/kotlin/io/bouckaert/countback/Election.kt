@@ -18,16 +18,16 @@ class Election(
 //        }
 //    }
 
-    val quota: Double get() = ((ballotStore.size / (numberOfVacancies + 1.0)) + 1.0).toInt().toDouble()
-
-    fun performCount(
+    suspend fun performCount(
         excludedCandidates: Set<Candidate> = emptySet(),
         verbose: Boolean = false,
         writeOutput: (String, newParagraph: Boolean) -> Unit = { _, _ -> }
     ): Results {
+        val quota = ((ballotStore.getSize() / (numberOfVacancies + 1.0)) + 1.0).toInt().toDouble()
+
         if (ballotStore.isEmpty()) throw Error("No votes to count")
         if (verbose) writeOutput("Total number of candidates is ${candidates.size}", true)
-        if (verbose) writeOutput("Total number of votes to count is ${ballotStore.size}", false)
+        if (verbose) writeOutput("Total number of votes to count is ${ballotStore.getSize()}", false)
         if (verbose) writeOutput("Quota for election is $quota", false)
 
         var countNumber = 1

@@ -3,6 +3,7 @@ package io.bouckaert.countback
 import io.bouckaert.countback.store.InMemoryBallotStore
 import org.w3c.dom.DedicatedWorkerGlobalScope
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.w3c.dom.MessageEvent
@@ -137,14 +138,14 @@ private suspend fun FileLoader.loadCandidatesByElectorate(year: Int): Map<String
     return dataLoader.loadCandidates().groupBy { electorates[it.electorateCode] ?: throw IllegalStateException("No electorate found for ecode ${it.electorateCode}") }
 }
 
-private suspend fun FileLoader.loadElectionData(year: Int, electorate: String): Pair<Set<Candidate>, Sequence<Ballot>> {
+private suspend fun FileLoader.loadElectionData(year: Int, electorate: String): Pair<Set<Candidate>, Flow<Preference>> {
     val dataLoader = ACTDataLoader("electiondata/$year/", this)
 
     val electorates = dataLoader.loadElectorates()
 
     val candidates = dataLoader.loadCandidates()
 
-    val ballots = dataLoader.loadBallots(electorate, electorates.entries.find { it.value == electorate }!!.key)
+    val preferences = dataLoader.loadPreferences(electorate, electorates.entries.find { it.value == electorate }!!.key)
 
-    return candidates to ballots
+    return candidates to preferences
 }
