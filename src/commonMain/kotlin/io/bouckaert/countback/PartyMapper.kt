@@ -10,6 +10,41 @@ interface PartyMapper {
         const val IND = "⚪"
         @JvmStatic
         fun forYear(year: Int): PartyMapper? = when(year) {
+            2024 -> object : PartyMapper {
+                override fun findEmoji(electorateCode: Int, partyCode: Int): String = when(electorateCode) {
+                    1 -> when(partyCode) {
+                        1 -> LIBERAL
+                        2 -> GREEN
+                        6 -> LABOR
+                        else -> IND
+                    }
+                    2 -> when(partyCode) {
+                        1 -> GREEN
+                        5 -> LABOR
+                        8 -> LIBERAL
+                        else -> IND
+                    }
+                    3 -> when(partyCode) {
+                        1 -> LABOR
+                        4 -> GREEN
+                        5 -> LIBERAL
+                        else -> IND
+                    }
+                    4 -> when(partyCode) {
+                        1 -> LABOR
+                        5 -> LIBERAL
+                        7 -> GREEN
+                        else -> IND
+                    }
+                    5 -> when(partyCode) {
+                        1 -> GREEN
+                        4 -> LIBERAL
+                        7 -> LABOR
+                        else -> IND
+                    }
+                    else -> IND
+                }
+            }
             2020 -> object : PartyMapper {
                 override fun findEmoji(electorateCode: Int, partyCode: Int): String = when(electorateCode) {
                     1 -> when(partyCode) {

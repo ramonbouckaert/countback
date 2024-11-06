@@ -85,6 +85,7 @@ const CountbackApp: FunctionComponent = () => {
                   }}
                   showSearch={true}
                   options={[
+                    { label: "2024", value: 2024 },
                     { label: "2020", value: 2020 },
                     { label: "2016", value: 2016 },
                     { label: "2012", value: 2012 },
