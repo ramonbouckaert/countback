@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.bouckaert"
-version = "2.1.0"
+version = "2.1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
