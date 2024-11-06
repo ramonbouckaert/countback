@@ -8,15 +8,6 @@ class Election(
     val ballotStore: BallotStore,
     val roundCountToInt: Boolean = false
 ) {
-//    init {
-//        ballots.forEach { vote ->
-//            vote.ranking.forEach { candidate ->
-//                if (candidate !in candidates) {
-//                    throw Error("Candidate $candidate is not in the pool of candidates")
-//                }
-//            }
-//        }
-//    }
 
     suspend fun performCount(
         excludedCandidates: Set<Candidate> = emptySet(),
@@ -66,6 +57,11 @@ class Election(
                 if (votePile != null && votePile.count() >= quota) {
                     if (verbose) writeOutput("Electing candidate $candidate as their count (${votePile.count()}) meets or exceeds the quota ($quota)", false)
                     elected[candidate] = votePile
+                    val remainingCandidates = count.filterKeys { it != candidate }.sortedByDescending()
+                    if (verbose && remainingCandidates.isNotEmpty()) writeOutput(
+                        "Remaining candidates: ${remainingCandidates.map { (candidate, votePile) -> "$candidate (${votePile.count()})" }.joinToString(", ")}",
+                        false
+                    )
 
                     // Eliminate candidate and distribute second preferences at transfer value
                     newCount = newCount.removeCandidateAndDistributeRemainingVotes(ballotStore, candidate, quota, countNumber, verbose, writeOutput)
@@ -104,6 +100,12 @@ class Election(
                 }?.key
                 if (excludedCandidate != null) {
                     if (verbose) writeOutput("Nobody can be elected this count, so the candidate with the fewest votes is eliminated: $excludedCandidate.", false)
+
+                    val remainingCandidates = count.filterKeys { it != excludedCandidate }.sortedByDescending()
+                    if (verbose && remainingCandidates.isNotEmpty()) writeOutput(
+                        "Remaining candidates: ${remainingCandidates.map { (candidate, votePile) -> "$candidate (${votePile.count()})" }.joinToString(", ")}",
+                        false
+                    )
 
                     count = count.removeCandidateAndDistributeRemainingVotes(ballotStore, excludedCandidate, quota, countNumber, verbose, writeOutput)
                 }

@@ -39,11 +39,14 @@ suspend fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
         // Distribute full votes received when the quota was met to their next preferred candidate still in the race
         val redistributedVotes = votesReceivedWhenQuotaMet.getFullVotesOnly().groupByHighestPreference(ballotStore, this.keys.minus(candidateToRemove))
 
+        // Calculate the number of full exhausted votes
+        val exhaustedVotes = (redistributedVotes[null]?.getFullVotesOnly()?.votes?.size ?: 0)
+
         // Calculate the vote value of the surplus (numerator for transfer value)
-        val voteValueOfSurplus = (votesReceivedBeforeQuotaMet.count() + votesReceivedWhenQuotaMet.getFullVotesOnly().count()) - quota
+        val voteValueOfSurplus = (votesReceivedBeforeQuotaMet.count() + votesReceivedWhenQuotaMet.getFullVotesOnly().count()) - (quota  - exhaustedVotes)
 
         // Calculate the number of non-exhausted ballot papers received at the time the quota was met (denominator for transfer value)
-        val nonExhaustedBallotPapers = votesReceivedWhenQuotaMet.getFullVotesOnly().votes.size - (redistributedVotes[null]?.getFullVotesOnly()?.votes?.size ?: 0)
+        val nonExhaustedBallotPapers = votesReceivedWhenQuotaMet.getFullVotesOnly().votes.size - exhaustedVotes
 
         // Compute transfer value
         val transferValue = maxOf(minOf(voteValueOfSurplus / nonExhaustedBallotPapers, 1.0), 0.0)

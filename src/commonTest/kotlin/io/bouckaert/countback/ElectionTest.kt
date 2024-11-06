@@ -30,7 +30,10 @@ class ElectionTest {
                     roundCountToInt = year <= 2012
                 )
 
-                return election.performCount()
+                return election.performCount(verbose = true, writeOutput = { s, newParagraph ->
+                    if (newParagraph) println("\r\n")
+                    println("\r\n$s")
+                })
             } catch (e: FileLoader.FileLoadException) {
                 return null
             }
@@ -69,6 +72,93 @@ class ElectionTest {
         val result = election.performCount()
 
         assertEquals(setOf(cPlatypus, cEmu), result.winnersAndVotes.keys)
+    }
+
+    // 2024 Election
+
+    @Test
+    fun murrumbidgee2024Test() = runTest {
+        val results = testRealElectorate(2024, "Murrumbidgee")
+        if (results != null) {
+            assertEquals(
+                setOf(
+                    Candidate(4, 5, 3, "HANSON, Jeremy"),
+                    Candidate(4, 1, 1, "STEEL, Chris"),
+                    Candidate(4, 4, 1, "CARRICK, Fiona"),
+                    Candidate(4, 5, 1, "COCKS, Ed"),
+                    Candidate(4, 1, 4, "PATERSON, Marisa"),
+                ),
+                results.winnersAndVotes.keys
+            )
+        }
+    }
+
+    @Test
+    fun kurrajong2024Test() = runTest {
+        val results = testRealElectorate(2024, "Kurrajong")
+        if (results != null) {
+            assertEquals(
+                setOf(
+                    Candidate(3, 1, 3, "BARR, Andrew"),
+                    Candidate(3, 5, 1, "LEE, Elizabeth"),
+                    Candidate(3, 1, 4, "STEPHEN-SMITH, Rachel"),
+                    Candidate(3, 4, 5, "RATTENBURY, Shane"),
+                    Candidate(3, 2, 2, "EMERSON, Thomas"),
+                ),
+                results.winnersAndVotes.keys
+            )
+        }
+    }
+
+    @Test
+    fun brindabella2024Test() = runTest {
+        val results = testRealElectorate(2024, "Brindabella")
+        if (results != null) {
+            assertEquals(
+                setOf(
+                    Candidate(1, 1, 5, "PARTON, Mark"),
+                    Candidate(1, 1, 1, "MORRIS, Deborah"),
+                    Candidate(1, 6, 1, "TOUGH, Caitlin"),
+                    Candidate(1, 6, 4, "WERNER-GIBBINGS, Taimus"),
+                    Candidate(1, 2, 1, "NUTTALL, Laura"),
+                ),
+                results.winnersAndVotes.keys
+            )
+        }
+    }
+
+    @Test
+    fun yerrabi2024Test() = runTest {
+        val results = testRealElectorate(2024, "Yerrabi")
+        if (results != null) {
+            assertEquals(
+                setOf(
+                    Candidate(5, 7, 3, "PETTERSSON, Michael"),
+                    Candidate(5, 7, 5, "ORR, Suzanne"),
+                    Candidate(5, 4, 5, "CASTLEY, Leanne"),
+                    Candidate(5, 4, 2, "MILLIGAN, James"),
+                    Candidate(5, 1, 1, "BRADDOCK, Andrew"),
+                ),
+                results.winnersAndVotes.keys
+            )
+        }
+    }
+
+    @Test
+    fun ginninderra2024Test() = runTest {
+        val results = testRealElectorate(2024, "Ginninderra")
+        if (results != null) {
+            assertEquals(
+                setOf(
+                    Candidate(2, 5, 2, "CHEYNE, Tara"),
+                    Candidate(2, 5, 1, "BERRY, Yvette"),
+                    Candidate(2, 8, 4, "CAIN, Peter"),
+                    Candidate(2, 1, 4, "CLAY, Jo"),
+                    Candidate(2, 8, 1, "BARRY, Chiaka"),
+                ),
+                results.winnersAndVotes.keys
+            )
+        }
     }
 
     // 2020 Election

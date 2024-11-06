@@ -13,6 +13,32 @@ class CountbackTest {
     }
 
     @Test
+    fun brindabella2023Test() = runTest {
+        val electionResults = ElectionTest.testRealElectorate(2020, "Brindabella")
+
+        if (electionResults != null) {
+
+            val resigningPile: VotePile = electionResults.winnersAndVotes[Candidate(1, 3, 1, "DAVIS, Johnathan")]!!
+
+            val result = Countback(
+                electionResults.ballotStore,
+                resigningPile,
+                electionResults.quota,
+                setOf(
+                    Candidate(1, 7, 1, "BAYNHAM, Greg"),
+                    Candidate(1, 4, 2, "DANIELS, James"),
+                    Candidate(1, 1, 5, "FORDE, Brendan"),
+                    Candidate(1, 3, 3, "NUTTALL, Laura"),
+                    Candidate(1, 2, 1, "SOXSMITH, Robyn"),
+                    Candidate(1, 1, 2, "WERNER-GIBBINGS, Taimus"),
+                )
+            ).performCount()
+
+            assertEquals(Candidate(1, 3, 3, "NUTTALL, Laura"), result.first)
+        }
+    }
+
+    @Test
     fun murrumbidgee2022Test() = runTest {
         val electionResults = ElectionTest.testRealElectorate(2020, "Murrumbidgee")
 
