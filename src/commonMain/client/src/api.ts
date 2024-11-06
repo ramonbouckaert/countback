@@ -1,6 +1,7 @@
 import { sendWwMessage, sendSwMessageMultipart } from "./index";
+import {Candidate} from "./types";
 
-export const fetchCandidates = (year: number): Promise<Record<string, string[]>> =>
+export const fetchCandidates = (year: number): Promise<Record<string, Candidate[]>> =>
   sendWwMessage({
     "type": "candidates",
     "year": year
@@ -14,8 +15,8 @@ export const fetchCandidates = (year: number): Promise<Record<string, string[]>>
 export const fetchCountback = (
   year: number,
   electorate: string,
-  candidateToResign: string,
-  candidatesToContest: string[],
+  candidateToResign: number,
+  candidatesToContest: number[],
   callback: (result: {
     message: string,
     newParagraph?: boolean

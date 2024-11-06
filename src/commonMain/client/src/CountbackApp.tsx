@@ -6,16 +6,17 @@ import { Content } from "antd/es/layout/layout";
 import { fetchCandidates, fetchCountback } from "./api";
 import { Container, ResultLine } from "./styles";
 import { DeviceSelect } from "./DeviceSelect";
+import {Candidate} from "./types";
 
 const CountbackApp: FunctionComponent = () => {
 
   const [menuCollapsed, setMenuCollapsed] = useState(false);
-  const [candidatesMap, setCandidatesMap] = useState(null as Record<string, string[]> | null);
+  const [candidatesMap, setCandidatesMap] = useState(null as Record<string, Candidate[]> | null);
   const [fetchingCandidatesMap, setFetchingCandidatesMap] = useState(0);
   const [year, setYear] = useState(null as number | null);
   const [electorate, setElectorate] = useState(null as string | null);
-  const [candidateToRetire, setCandidateToRetire] = useState(null as string | null);
-  const [candidatesToContest, setCandidatesToContest] = useState([] as string[]);
+  const [candidateToRetire, setCandidateToRetire] = useState(null as number | null);
+  const [candidatesToContest, setCandidatesToContest] = useState([] as number[]);
   const [fetchingCountback, setFetchingCountback] = useState(false as boolean);
   const [countbackResult, setCountbackResult] = useState(null as JSX.Element[] | null);
   const [fetchError, setFetchError] = useState(null as string | null);
@@ -118,10 +119,11 @@ const CountbackApp: FunctionComponent = () => {
                     setCandidatesToContest(cs => cs.filter(c1 => c1 !== c))
                   }}
                   showSearch={true}
+                  optionFilterProp={"label"}
                   loading={fetchingCandidatesMap > 0}
                   options={
                     candidatesMap && electorate && candidatesMap[electorate]
-                      ? candidatesMap[electorate].map(c => ({ label: c, value: c }))
+                      ? candidatesMap[electorate].map(c => ({ label: c.name, value: c.id }))
                       : []
                   }
                 />
@@ -132,29 +134,30 @@ const CountbackApp: FunctionComponent = () => {
                   mode={"multiple"}
                   style={{ width: "100%" }}
                   value={candidatesToContest}
-                  onChange={(c: string[]) => {
-                    setCandidatesToContest(c.filter(n => n !== "*all*" && n !== "*none*"))
+                  onChange={(c: number[]) => {
+                    setCandidatesToContest(c.filter(n => n !== -1 && n !== -2))
                   }}
-                  onSelect={(s: string) => {
+                  onSelect={(s: number) => {
                     if (candidatesMap && electorate && candidatesMap[electorate]) {
-                      if (s === "*all*") {
+                      if (s === -1) {
                         setCandidatesToContest(
-                          candidatesMap[electorate].filter(c => c !== candidateToRetire)
+                          candidatesMap[electorate].map(c => c.id).filter(c => c !== candidateToRetire)
                         )
-                      } else if (s === "*none*") {
+                      } else if (s === -2) {
                         setCandidatesToContest([])
                       }
                     }
                   }}
                   showSearch={true}
+                  optionFilterProp={"label"}
                   loading={fetchingCandidatesMap > 0}
                   options={[
-                    { label: "-- Select All --", value: "*all*" },
-                    { label: "-- Deselect All --", value: "*none*" },
+                    { label: "-- Select All --", value: -1 },
+                    { label: "-- Deselect All --", value: -2 },
                     ...candidatesMap && electorate && candidatesMap[electorate]
-                      ? candidatesMap[electorate].filter(c => c !== candidateToRetire).map(c => ({
-                        label: c,
-                        value: c
+                      ? candidatesMap[electorate].filter(c => c.id !== candidateToRetire).map(c => ({
+                        label: c.name,
+                        value: c.id
                       }))
                       : []
                   ]}
@@ -170,7 +173,7 @@ const CountbackApp: FunctionComponent = () => {
                       fetchCountback(
                         year ?? 2020,
                         electorate ?? "",
-                        candidateToRetire ?? "",
+                        candidateToRetire ?? 0,
                         candidatesToContest,
                         result => {
                           if (result === null) {

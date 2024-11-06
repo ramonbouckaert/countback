@@ -31,8 +31,18 @@ sealed class WebWorkerResponse {
     @SerialName("candidates")
     data class Candidates(
         override val id: String,
-        val candidatesByElectorate: Map<String, Collection<Candidate>>
+        val candidatesByElectorate: Map<String, Collection<CandidateWithName>>
     ): WebWorkerResponse()
+
+    @Suppress("DataClassPrivateConstructor")
+    @Serializable
+    @SerialName("candidateWithName")
+    data class CandidateWithName private constructor(
+        val id: Candidate,
+        val name: String
+    ) {
+        constructor(candidate: Candidate): this(candidate, candidate.toString())
+    }
 
     @Serializable
     @SerialName("countback")

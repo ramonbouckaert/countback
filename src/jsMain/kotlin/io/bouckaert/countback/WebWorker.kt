@@ -1,5 +1,6 @@
 package io.bouckaert.countback
 
+import io.bouckaert.countback.WebWorkerResponse.CandidateWithName
 import io.bouckaert.countback.store.InMemoryBallotStore
 import org.w3c.dom.DedicatedWorkerGlobalScope
 import kotlinx.coroutines.*
@@ -37,7 +38,7 @@ private suspend fun handleMessage(fileLoader: FileLoader, request: WebWorkerRequ
         is WebWorkerRequest.Candidates -> respond(
             WebWorkerResponse.Candidates(
                 request.id,
-                fileLoader.loadCandidatesByElectorate(request.year)
+                fileLoader.loadCandidatesByElectorate(request.year).mapValues { (_, v) -> v.map(::CandidateWithName) }
             )
         )
         is WebWorkerRequest.Countback -> {

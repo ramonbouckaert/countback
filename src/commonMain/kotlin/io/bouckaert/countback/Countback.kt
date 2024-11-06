@@ -30,13 +30,13 @@ class Countback(
 
         var countNumber = 1
 
-        if (count.size < 1) {
+        if (count.isEmpty()) {
             throw Error("No eligible candidates to allocate votes to")
         }
 
         // Iterate until all positions are filled
         while (true) {
-            if (verbose) writeOutput("Starting count #${countNumber}: ${count}", true)
+            if (verbose) writeOutput("Starting count #$countNumber", true)
 
             // Elect any candidate with more first preference votes than the quota
             count.sortedByDescending().forEach { (candidate) ->

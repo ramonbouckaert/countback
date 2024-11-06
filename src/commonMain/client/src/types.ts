@@ -1,4 +1,7 @@
-type Candidate = string
+export type Candidate = {
+    id: number,
+    name: string
+}
 
 type CandidatesRequest = {
   type: "candidates"
@@ -9,8 +12,8 @@ type CountbackRequest = {
   type: "countback"
   year: number,
   electorate: string,
-  candidateToResign: Candidate,
-  candidatesToContest: Candidate[]
+  candidateToResign: number,
+  candidatesToContest: number[]
 }
 
 export type WebWorkerRequest = CandidatesRequest | CountbackRequest
