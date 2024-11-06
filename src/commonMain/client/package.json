@@ -1,6 +1,6 @@
 {
   "name": "countbackclient",
-  "version": "2.1.0-next",
+  "version": "2.1.1",
   "private": true,
   "dependencies": {
     "@babel/core": "^7.16.0",
