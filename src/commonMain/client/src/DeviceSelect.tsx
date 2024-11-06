@@ -30,7 +30,8 @@ export const DeviceSelect: FunctionComponent<SelectProps> =
                 })));
                 props.onSelect && props.onSelect(result[0], {
                   label: result[0]
-                })
+                });
+                if (result.includes("-1") || result.includes("-2")) event.target.blur();
               } else {
                 props.onChange && props.onChange(event.target.value, { label: event.target.value });
               }

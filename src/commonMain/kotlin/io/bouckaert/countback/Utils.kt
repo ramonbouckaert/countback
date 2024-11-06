@@ -64,7 +64,8 @@ suspend fun Map<Candidate, VotePile>.removeCandidateAndDistributeRemainingVotes(
     }
 }
 
-fun Map<Candidate, VotePile>.sortedByDescending() = this.entries.sortedByDescending { (_, votePile) -> votePile.count() }.map { it.key to it.value }.toMap()
+fun Map<Candidate, VotePile>.sortedByDescending() =
+    this.entries.sortedByDescending { (_, votePile) -> votePile.count() }.associate { it.key to it.value }
 
 suspend inline fun Flow<Preference>.toBallotsWithIds(): Map<Long, Ballot> = this
     .groupToList { it.ballotId }

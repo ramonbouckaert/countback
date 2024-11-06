@@ -50,6 +50,11 @@ class Countback(
                         })",
                         false
                     )
+                    val remainingCandidates = count.filterKeys { it != candidate }
+                    if (verbose && remainingCandidates.isNotEmpty()) writeOutput(
+                        "Remaining candidates: ${remainingCandidates.map { (candidate, votePile) -> "$candidate (${votePile.count()})" }.joinToString(", ")}",
+                        false
+                    )
                     writeOutput("Elected candidate $candidate ($votePile)", true)
                     return candidate to votePile
                 }
@@ -78,7 +83,11 @@ class Countback(
             }?.key
             if (excludedCandidate != null) {
                 if (verbose) writeOutput("Nobody can be elected this count, so the candidate with the fewest votes is eliminated: $excludedCandidate.", false)
-
+                val remainingCandidates = count.filterKeys { it != excludedCandidate }.sortedByDescending()
+                if (verbose && remainingCandidates.isNotEmpty()) writeOutput(
+                    "Remaining candidates: ${remainingCandidates.map { (candidate, votePile) -> "$candidate (${votePile.count()})" }.joinToString(", ")}",
+                    false
+                )
                 count = count.removeCandidateAndDistributeRemainingVotes(
                     ballotStore,
                     excludedCandidate,

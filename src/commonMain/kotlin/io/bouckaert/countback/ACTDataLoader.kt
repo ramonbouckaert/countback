@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.*
 
 class ACTDataLoader(
     private val basePath: String,
-    private val fileLoader: FileLoader
+    private val fileLoader: FileLoader,
+    private val partyMapper: PartyMapper? = null
 ) {
 
     suspend fun loadElectorates(): Map<Int, String> = readFromPath("${basePath}Electorates.txt")
@@ -27,7 +28,8 @@ class ACTDataLoader(
                 val pcode = entry["pcode"]?.toInt() ?: return@mapNotNull null
                 val ccode = entry["ccode"]?.toInt() ?: return@mapNotNull null
                 val cname = entry["cname"] ?: return@mapNotNull null
-                val c = Candidate(ecode, pcode, ccode, cname)
+                val partyEmoji = partyMapper?.findEmoji(ecode, pcode)?.let { "$it " } ?: ""
+                val c = Candidate(ecode, pcode, ccode, "$partyEmoji$cname")
                 c
             }.toSet()
     }

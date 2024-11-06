@@ -132,7 +132,7 @@ private suspend fun handleMessage(fileLoader: FileLoader, request: WebWorkerRequ
 }
 
 private suspend fun FileLoader.loadCandidatesByElectorate(year: Int): Map<String, Collection<Candidate>> {
-    val dataLoader = ACTDataLoader("electiondata/$year/", this)
+    val dataLoader = ACTDataLoader("electiondata/$year/", this, PartyMapper.forYear(year))
 
     val electorates = dataLoader.loadElectorates()
 
@@ -140,7 +140,7 @@ private suspend fun FileLoader.loadCandidatesByElectorate(year: Int): Map<String
 }
 
 private suspend fun FileLoader.loadElectionData(year: Int, electorate: String): Pair<Set<Candidate>, Flow<Preference>> {
-    val dataLoader = ACTDataLoader("electiondata/$year/", this)
+    val dataLoader = ACTDataLoader("electiondata/$year/", this, PartyMapper.forYear(year))
 
     val electorates = dataLoader.loadElectorates()
 

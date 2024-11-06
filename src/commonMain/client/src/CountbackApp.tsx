@@ -139,11 +139,11 @@ const CountbackApp: FunctionComponent = () => {
                   }}
                   onSelect={(s: number) => {
                     if (candidatesMap && electorate && candidatesMap[electorate]) {
-                      if (s === -1) {
+                      if (s.toString() === "-1") {
                         setCandidatesToContest(
                           candidatesMap[electorate].map(c => c.id).filter(c => c !== candidateToRetire)
                         )
-                      } else if (s === -2) {
+                      } else if (s.toString() === "-2") {
                         setCandidatesToContest([])
                       }
                     }
